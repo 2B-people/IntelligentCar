@@ -2,6 +2,8 @@
   <master auto="start"/>
   <arg name="map" value="game"/>
 
+  <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
+
   <!-- Run the map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/$(arg map).yaml" respawn="false" />
   <!--rf2o_Laser_Odometry-->
@@ -36,17 +38,18 @@
 
     <!-- L1 controller -->  
   <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen"> -->
-  <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">           
+  <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false">           
       <!-- L1 -->
-      <param name="Vcmd" value="2.0" /> <!-- speed of car m/s -->  
-      <param name="lfw" value="0.1" /> <!-- qianzhan -->  
+      <param name="Vcmd" value="2.0" /> <!-- speed of car m/s -->
+      <param name="lfw" value="0.2" /> <!-- qianzhan -->  
+      <param name="Lfw" value="0.2" /> <!-- qianzhan -->  
       <!-- ESC -->
       <param name="baseSpeed" value="1550"/> <!-- pwm for motor constant speed, 1500: stop -->
       <param name="controller_freq" value="40"/> 
         
       <!-- Servo -->
       <param name="baseAngle" value="97.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-      <param name="AngleGain" value="-6.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+      <param name="AngleGain" value="-5.0"/> <!-- for tt02: >0, for hsp: <0 -->	
       <param name="GasGain" value="0.7"/> <!-- for tt02: >0, for hsp: <0 -->	
       <!-- Toplic -->
       <remap from="/odom" to="/odometry/filtered"/>
