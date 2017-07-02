@@ -7,15 +7,15 @@
   <!-- Publish static tf -->
   <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
 
-  <!-- Run the Base Node -->
-  <!-- <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" /> -->
-  <node pkg="art_driver" type="art_driver_node" name="art_driver_node" output="screen"/>
-
   <!-- Run the lidar node -->
   <include file="$(find roborts_bringup)/launch/include/ls01g.launch"/>
 
   <!-- Run the Imu Node -->
   <include file="$(find art_imu)/launch/imu.launch"/>  
-  
-</launch>
 
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/game.yaml" respawn="false" />
+  
+  <!-- Run the rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
+
+</launch>

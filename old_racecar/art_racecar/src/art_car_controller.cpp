@@ -33,7 +33,7 @@ along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PI 3.14159265358979
 int start_loop_flag = 0;
-int start_speed = 1510;
+int start_speed = 1500;
 extern  PID  pid_speed;
 
 L1Controller::L1Controller()
@@ -56,8 +56,8 @@ L1Controller::L1Controller()
     pn.param("baseAngle", baseAngle, 90.0);
 
     //Publishers and Subscribers
-    odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
-    path_sub = n_.subscribe("/move_base/NavfnROS/plan", 1, &L1Controller::pathCB, this);
+    odom_sub = n_.subscribe("/odom", 1, &L1Controller::odomCB, this);
+    path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
     goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
     marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
     pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
@@ -125,7 +125,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
 
             if(!goal_reached)
             {
-                if(start_loop_flag++ <= 10)
+                if(start_loop_flag++ <= 12)
                 {
 
                     double u = getGasInput(carVel.linear.x);
@@ -134,7 +134,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
 
 
 
-                     start_speed += 4;
+                     start_speed += 3;
                      if(cmd_vel.linear.x > baseSpeed)   cmd_vel.linear.x = baseSpeed;
                      ROS_INFO("baseSpeed = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
                 }

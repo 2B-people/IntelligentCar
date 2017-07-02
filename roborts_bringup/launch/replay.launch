@@ -1,7 +1,8 @@
 <launch>
   <master auto="start"/>
+  <arg name="speed" value="0.5"/>
 
-  <node pkg="rosbag" type="play" name="playe" output="screen" args="-r 0.5 /home/sz/.ros/test.bag"/>
+  <node pkg="rosbag" type="play" name="playe" output="screen" args="-r $(arg speed) /home/sz/.ros/test.bag"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />  
 </launch>

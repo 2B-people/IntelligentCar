@@ -30,9 +30,6 @@ void Chassis::SDK_Init()
   handle_->CreateSubscriber<roborts_sdk::cmd_imu_data>(CHASSIS_CMD_SET, CMD_PUSH_IMU_DATA,
                                                        CHASSIS_ADDRESS, MANIFOLD2_ADDRESS,
                                                        std::bind(&Chassis::ImuInfoCallback, this, std::placeholders::_1));
-  // handle_->CreateSubscriber<roborts_sdk::cmd_uwb_info>(COMPATIBLE_CMD_SET, CMD_PUSH_UWB_INFO,
-  //                                                      CHASSIS_ADDRESS, MANIFOLD2_ADDRESS,
-  //                                                      std::bind(&Chassis::UWBInfoCallback, this, std::placeholders::_1));
 
   chassis_speed_pub_ = handle_->CreatePublisher<roborts_sdk::cmd_chassis_speed>(CHASSIS_CMD_SET, CMD_SET_CHASSIS_SPEED,
                                                                                 MANIFOLD2_ADDRESS, CHASSIS_ADDRESS);
@@ -48,15 +45,6 @@ void Chassis::ROS_Init()
   ros_sub_cmd_chassis_vel_ = ros_nh_.subscribe("/car/cmd_vel", 1, &Chassis::ChassisSpeedCtrlCallback, this);
   ros_sub_cmd_chassis_vel_acc_ = ros_nh_.subscribe("cmd_vel_acc", 1, &Chassis::ChassisSpeedAccCtrlCallback, this);
 
-  //ros_message_init
-  // imu_data_.header.frame_id = "IMU_link";
-  // odom_.header.frame_id = "odom";
-  // odom_.child_frame_id = "base_link";
-
-  // odom_tf_.header.frame_id = "odom";
-  // odom_tf_.child_frame_id = "base_link";
-
-  // uwb_data_.header.frame_id = "uwb";
 }
 void Chassis::ImuInfoCallback(const std::shared_ptr<roborts_sdk::cmd_imu_data> imu_info)
 {
@@ -99,7 +87,8 @@ void Chassis::ChassisSpeedAccCtrlCallback(const roborts_msgs::TwistAccel::ConstP
   chassis_spd_acc_pub_->Publish(chassis_spd_acc);
 }
 
-/*******************************************RACECAR********************************************************** */
+/************************************************************************************************************/
+/*******************************************RACECAR**********************************************************/
 
 Car::Car(std::shared_ptr<roborts_sdk::Handle> handle) : handle_(handle)
 {

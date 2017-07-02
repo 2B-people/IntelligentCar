@@ -4,12 +4,12 @@ para_basic {
 }
 para_costmap_interface {
   global_frame: "odom"
-  robot_base_frame: "base_link"
+  robot_base_frame: "base_footprint"
   footprint_padding: 0.05
   transform_tolerance: 1.0
   distance_threshold: 1.0
-  map_width: 7.0
-  map_height: 4.0
+  map_width: 14.0
+  map_height: 14.0
   map_resolution: 0.04
   map_origin_x: 0.0
   map_origin_y: 0.0
@@ -18,23 +18,23 @@ para_costmap_interface {
   has_obstacle_layer: true
   has_static_layer: false
   inflation_file_path: "/config/inflation_layer_config_min.prototxt"
-  map_update_frequency: 10 
+  map_update_frequency: 10
 }
 footprint {
   point {
-    x: -0.225
-    y: -0.175
+    x: 0.175
+    y: 0.225
   }
   point {
-    x: -0.225
-    y: 0.175
+    x: -0.175
+    y: 0.225
   }
   point {
-    x: 0.225
-    y: 0.175
+    x: 0.175
+    y: 0.225
   }
   point {
-    x: 0.225
-    y: -0.175
+    x: 0.175
+    y: -0.225
   }
 }

@@ -6,7 +6,7 @@ All rights reserved. (Hypha ROS Workshop)
 This file is part of hypha_racecar package.
 
 hypha_racecar is free software: you can redistribute it and/or modify
-it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published
+it under the tersms of the GNU LESSER GENERAL PUBLIC LICENSE as published
 by the Free Software Foundation, either version 3 of the License, or
 any later version.
 
@@ -66,6 +66,7 @@ class L1Controller
         double Gas_gain, baseAngle, Angle_gain, goalRadius;
         int controller_freq, baseSpeed;
         bool foundForwardPt, goal_received, goal_reached;
+        int car_stop;
 
         void odomCB(const nav_msgs::Odometry::ConstPtr& odomMsg);
         void pathCB(const nav_msgs::Path::ConstPtr& pathMsg);
@@ -83,10 +84,11 @@ L1Controller::L1Controller()
 
     //Car parameter
     pn.param("L", L, 0.26);
-    pn.param("Lrv", Lrv, 10.0);
+    pn.param("Lrv", Lrv, 5.0);
+    pn.param("lrv", lrv, 5.0);
+    
     pn.param("Vcmd", Vcmd, 1.0);
     pn.param("lfw", lfw, 0.13);
-    pn.param("lrv", lrv, 10.0);
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
@@ -99,7 +101,7 @@ L1Controller::L1Controller()
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
     path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
     goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
-    // marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
+    marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
     pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
 
     //Timer
@@ -113,6 +115,7 @@ L1Controller::L1Controller()
     goal_reached = false;
     cmd_vel.linear.x = 1500; // 1500 for stop
     cmd_vel.angular.z = baseAngle;
+    car_stop = 0;
 
     //Show info
     ROS_INFO("[param] baseSpeed: %d", baseSpeed);
@@ -122,7 +125,7 @@ L1Controller::L1Controller()
     ROS_INFO("[param] Lfw: %f", Lfw);
 
     //Visualization Marker Settings
-    // initMarker();
+    initMarker();
 }
 
 
@@ -191,7 +194,7 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goalMsg)
 
         /*Draw Goal on RVIZ*/
         goal_circle.pose = odom_goal.pose;
-        // marker_pub.publish(goal_circle);
+        marker_pub.publish(goal_circle);
     }
     catch(tf::TransformException &ex)
     {
@@ -256,9 +259,10 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
         {
             geometry_msgs::PoseStamped map_path_pose = map_path.poses[i];
             geometry_msgs::PoseStamped odom_path_pose;
+            //ROS_INFO("Count:%d",i);
             ros::Time t = ros::Time(0);
             try
-            {
+            {                
                 tf_listener.transformPose("odom", t , map_path_pose, "map" ,odom_path_pose);
                 geometry_msgs::Point odom_path_wayPt = odom_path_pose.pose.position;
                 bool _isForwardWayPt = isForwardWayPt(odom_path_wayPt,carPose);
@@ -276,8 +280,8 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
             }
             catch(tf::TransformException &ex)
             {
-                // ROS_ERROR("%s",ex.what());
-                ros::Duration(0.01).sleep();
+                //ROS_ERROR("%s",ex.what());
+                ros::Duration(0.03).sleep();
             }
         }
         
@@ -302,8 +306,8 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
         line_strip.points.push_back(forwardPt);
     }
 
-    // marker_pub.publish(points);
-    // marker_pub.publish(line_strip);
+    marker_pub.publish(points);
+    marker_pub.publish(line_strip);
     
     odom_car2WayPtVec.x = cos(carPose_yaw)*(forwardPt.x - carPose_pos.x) + sin(carPose_yaw)*(forwardPt.y - carPose_pos.y);
     odom_car2WayPtVec.y = -sin(carPose_yaw)*(forwardPt.x - carPose_pos.x) + cos(carPose_yaw)*(forwardPt.y - carPose_pos.y);
@@ -368,6 +372,7 @@ void L1Controller::goalReachingCB(const ros::TimerEvent&)
         {
             goal_reached = true;
             goal_received = false;
+            car_stop = 100;
             ROS_INFO("Goal Reached !");
         }
     }
@@ -387,18 +392,51 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
         double eta = getEta(carPose);  
         if(foundForwardPt)
         {
+
             cmd_vel.angular.z = baseAngle + getSteeringAngle(eta)*Angle_gain;
             /*Estimate Gas Input*/
-            // if(!goal_reached)
-            // {
-            //     double u = getGasInput(carVel.linear.x);
-            //     //cmd_vel.linear.x = baseSpeed - u;
-            //     cmd_vel.linear.x = baseSpeed;
-            //     ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
-            // }
+
+            if(!goal_reached)
+            {
+                //ROS_INFO("!goal_reached");
+                double u = getGasInput(carVel.linear.x);                   
+                cmd_vel.linear.x = baseSpeed + u;
+                    
+                ROS_INFO("Gas = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+            }
+
         }
     }
-    pub_.publish(cmd_vel);
+    if(car_stop > 0)
+    {
+        // if(carVel.linear.x > 0)
+        // {
+
+        //     cmd_vel.linear.x = 1300; //反向刹车
+        //     pub_.publish(cmd_vel);
+        //    // for(int i=0;i<20;i++)
+        //    // {
+        //    //     pub_.publish(cmd_vel);
+        //    //     sleep(0.1);
+        //    //     ROS_INFO("cat stop cmd_vel= %f",cmd_vel.linear.x);
+        //    // }
+            
+        // 
+        // else
+        {
+            car_stop = 0;
+            cmd_vel.linear.x = 1500;
+            pub_.publish(cmd_vel);
+
+            ROS_INFO("cmd_vel= %f",cmd_vel.linear.x);
+        }
+    }
+    else
+    {
+        pub_.publish(cmd_vel);
+        car_stop = 0;
+        //ROS_INFO("car run cmd_vel= %f",cmd_vel.linear.x);
+    }
 }
 
 

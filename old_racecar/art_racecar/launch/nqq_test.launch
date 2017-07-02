@@ -4,10 +4,10 @@
 
     <!-- SENSOR DEVICE -->
     <master auto="start"/>
-    <arg name="map" value="mymap"/>
+    <arg name="map" value="game"/>
     
     <!-- Map server -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find art_racecar)/map/$(arg map).yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/$(arg map).yaml"/>
 
     <!-- ODOMETRY -->
     <!--rf2o_Laser_Odometry-->
@@ -51,17 +51,24 @@
     </node>
 
     <!-- L1 controller -->  
-    <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" >            
+    <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">           
+    <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen">              -->
+        <!-- L1 -->
+        <param name="Vcmd" value="1.5" /> <!-- speed of car m/s -->        
         <!-- ESC -->
-        <param name="controller_freq" value="51"/> 
-
+        <param name="baseSpeed" value="1550"/> <!-- pwm for motor constant speed, 1500: stop -->
+        <param name="controller_freq" value="30"/> 
+        
+    
         <!-- Servo -->
         <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-        <param name="AngleGain" value="-4.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+        <param name="AngleGain" value="-3.5"/> <!-- for tt02: >0, for hsp: <0 -->	
+        <param name="GasGain" value="0.7"/> <!-- for tt02: >0, for hsp: <0 -->	
 
         <!-- Toplic -->
         <remap from="/odom" to="/odometry/filtered"/>
         <remap from="/move_base_node/NavfnROS/plan" to="/move_base/TebLocalPlannerROS/local_plan" /> 
+        <!-- <remap from="/move_base_node/NavfnROS/plan" to="/move_base/TebLocalPlannerROS/global_plan" />  -->
         <!-- <remap from="/move_base_node/NavfnROS/plan" to="/move_base/NavfnROS/plan" />  -->
     </node>
 

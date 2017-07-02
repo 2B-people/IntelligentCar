@@ -38,7 +38,7 @@
   <!-- L1 controller -->  
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" >           
     <!-- ESC -->
-    <param name="controller_freq" value="50"/> 
+    <param name="controller_freq" value="20"/> 
 
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
@@ -47,7 +47,7 @@
 
     <!-- Topic Remap-->
     <remap from="/odom" to="/odometry/filtered"/>
-    <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory"/>
+    <remap from="/move_base_node/NavfnROS/plan" to="/global_planner_node/path"/>
   </node>
 
   <!-- Run the rosbag -->

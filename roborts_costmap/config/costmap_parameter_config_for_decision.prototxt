@@ -4,13 +4,13 @@ para_basic {
 }
 para_costmap_interface {
   global_frame: "map"
-  robot_base_frame: "base_link"
+  robot_base_frame: "base_footprint"
   footprint_padding: 0.1
   transform_tolerance: 3.0
   distance_threshold: 1.0
-  map_width: 60.0
-  map_height: 60.0
-  map_resolution: 0.05
+  map_width: 30.0
+  map_height: 30.0
+  map_resolution: 0.2
   map_origin_x: 0.0
   map_origin_y: 0.0
   is_tracking_unknown: false
@@ -22,19 +22,19 @@ para_costmap_interface {
 }
 footprint {
   point {
-    x: 0.225
-    y: 0.175
+    x: 0.175
+    y: 0.225
   }
   point {
-    x: -0.225
-    y: 0.175
+    x: -0.175
+    y: 0.225
   }
   point {
-    x: 0.225
-    y: 0.175
+    x: 0.175
+    y: 0.225
   }
   point {
-    x: 0.225
-    y: -0.175
+    x: 0.175
+    y: -0.225
   }
 }

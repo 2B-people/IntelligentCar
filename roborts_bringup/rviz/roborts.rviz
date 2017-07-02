@@ -7,12 +7,11 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
-        - /Map2
         - /Path1
         - /Path2
         - /Odometry1/Shape1
         - /Odometry1/Covariance1
-        - /PoseArray1
+        - /Marker1
       Splitter Ratio: 0.5
     Tree Height: 843
   - Class: rviz/Selection
@@ -190,7 +189,7 @@ Visualization Manager:
           Value: true
         Value: false
       Enabled: true
-      Keep: 1
+      Keep: 100
       Name: Odometry
       Position Tolerance: 0.100000001
       Shape:
@@ -222,6 +221,14 @@ Visualization Manager:
       Topic: /move_base/TebLocalPlannerROS/teb_poses
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /car_path
+      Name: Marker
+      Namespaces:
+        Markers: true
+      Queue Size: 11
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -247,25 +254,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 16.0026112
+      Distance: 13.8552713
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.139196396
-        Y: 0.906463623
+        X: -1.75321531
+        Y: -0.483456254
         Z: 0.000157238435
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.00100000005
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.994795918
+      Pitch: 1.44979596
       Target Frame: map
       Value: ThirdPersonFollower (rviz)
-      Yaw: 2.95762467
+      Yaw: 3.04262614
     Saved: ~
 Window Geometry:
   Displays:
