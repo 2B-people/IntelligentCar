@@ -39,7 +39,8 @@ public:
   void Run()
   {
     auto executor_state = Update();
-    auto robot_map_pose = blackboard_->GetRobotMapPose();
+    // auto robot_map_pose = blackboard_->GetRobotMapPose();
+    ROS_WARN("IN HERE");
     if (executor_state != BehaviorState::RUNNING)
     {
       if (cancel_goal_)
@@ -49,17 +50,30 @@ public:
         cancel_goal_ = false;
         return;
       }
+      // else
+      // {
+      //   loop_++;
+      //   ROS_WARN("IN HERE");
+      //   if (loop_ == 100)
+      //   {
+      //     chassis_executor_->Cancel();
+      //     chase_goal_.header.stamp = ros::Time::now();
+      //     chassis_executor_->Execute(chase_goal_);
+      //     loop_ = 0;
+      //   }
+      // }
     }
     else
     {
-      loop_++;
-      if (loop_ == 10)
-      {
-        chassis_executor_->Cancel();
-        chase_goal_.header.stamp = ros::Time::now();
-        chassis_executor_->Execute(chase_goal_);
-        loop_ = 0;
-      }
+      // loop_++;
+      // if (loop_ == 100)
+      // {
+      //   ROS_WARN("IN HERE");
+      //   chassis_executor_->Cancel();
+      //   chase_goal_.header.stamp = ros::Time::now();
+      //   chassis_executor_->Execute(chase_goal_);
+      //   loop_ = 0;
+      // }
     }
   }
 

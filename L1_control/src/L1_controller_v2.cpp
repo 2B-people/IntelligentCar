@@ -41,10 +41,10 @@ class L1Controller
 public:
     L1Controller();
     void initMarker();
-    
+
     bool isForwardWayPt(const geometry_msgs::Point &wayPt, const geometry_msgs::Pose &carPose);
     bool isWayPtAwayFromLfwDist(const geometry_msgs::Point &wayPt, const geometry_msgs::Point &car_pos);
-    
+
     double getYawFromPose(const geometry_msgs::Pose &carPose);
     double getEta(const geometry_msgs::Pose &carPose);
     double getCar2GoalDist();
@@ -82,7 +82,7 @@ private:
     double u_radius_;
     int controller_freq;
     int now_speed_;
-    
+
     PID pid_;
     double distance_kp_;
     double kp_, ki_, kd_;
@@ -394,7 +394,7 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
             catch (tf::TransformException &ex)
             {
                 //ROS_ERROR("%s",ex.what());
-                ros::Duration(0.03).sleep();
+                ros::Duration(0.01).sleep();
             }
         }
     }
@@ -515,44 +515,52 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 {
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
-    Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
     if (goal_received && go_)
     {
         /*Estimate Steering Angle*/
+        Lfw = goalRadius = getL1Distance(carVel.linear.x * 1.1);
         double eta = getEta(carPose);
+        double judge_angle = getSteeringAngle(eta) * Angle_gain;
+
+        Lfw = goalRadius = getL1Distance(carVel.linear.x);
+        eta = getEta(carPose);
+        double steer_angle = getSteeringAngle(eta) * Angle_gain;
 
         if (foundForwardPt)
         {
-            double steering_angle = getSteeringAngle(eta) * Angle_gain;
-            cmd_vel.angular.z = baseAngle + steering_angle;
+            cmd_vel.angular.z = baseAngle + steer_angle;
+            if (carVel.linear.x < 1.0)
+            {
+                cmd_vel.angular.z = baseAngle + steer_angle * 1.08;
+            }
 
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
                 double set_speed_cm = 0.0;
 
-                //abs steering_angle;
-                if (steering_angle < 0.0)
+                //abs judge_angle;
+                if (judge_angle < 0.0)
                 {
-                    steering_angle = -steering_angle;
+                    judge_angle = -judge_angle;
                 }
 
-                if (steering_angle > 10.0 && steering_angle < 20.0)
+                if (judge_angle > 10.0 && judge_angle < 20.0)
                 {
                     set_speed_cm = set_speed_1_;
                 }
-                else if (steering_angle > 20.0 && steering_angle < 30.0)
+                else if (judge_angle > 20.0 && judge_angle < 30.0)
                 {
                     set_speed_cm = set_speed_2_;
                 }
-                else if (steering_angle > 30.0 && steering_angle < 40.0)
+                else if (judge_angle > 30.0 && judge_angle < 40.0)
                 {
                     set_speed_cm = set_speed_3_;
                 }
-                else if (steering_angle > 40.0)
+                else if (judge_angle > 40.0)
                 {
                     set_speed_cm = set_speed_4_;
                 }
@@ -563,6 +571,10 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
                 double pid_out = pid_.calcPid(set_speed_cm, carVel.linear.x * 100);
 
+                if (judge_angle > 40.0)
+                {
+                    pid_out = pid_out * 1.1;
+                }
                 now_speed_ = now_speed_ + (int)pid_out;
 
                 if (now_speed_ >= max_pwm_)
@@ -580,7 +592,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 ROS_INFO("set_speed_cm:%.2f", set_speed_cm);
                 ROS_INFO("carVel.linear.x:%f", carVel.linear.x * 100);
                 ROS_INFO("pid_out:%.2f", pid_out);
-                ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
+                ROS_INFO("Gas = %.2f......angular = %.2f\n judge_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, judge_angle);
             }
         }
     }

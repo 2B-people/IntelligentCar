@@ -31,7 +31,7 @@
   <node pkg="roborts_planning" type="global_planner_node" name="global_planner_node" respawn="false" />
 
   <!-- Run the local planner node -->
-  <node pkg="roborts_planning" type="local_planner_node" name="local_planner_node" respawn="false">
+  <node pkg="roborts_planning" type="local_planner_node" name="local_planner_node" respawn="false" >
     <remap from="/odom" to="/odometry/filtered"/>
   </node>
 
@@ -42,28 +42,28 @@
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
-    <param name="distance_kp_" value="2.38" />
-    <param name="controller_freq" value="15"/>
+    <param name="distance_kp_" value="2.36" />
+    <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
-    <param name="max_pwm_" value="5260"/>
-    <param name="min_pwm_" value="4950"/>
+    <param name="max_pwm_" value="5280"/>
+    <param name="min_pwm_" value="4800"/>
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="260.0"/>
+    <param name="MaxSpeed" value="270.0"/>
     <param name="set_speed_1_" value="180.0"/>
-    <param name="set_speed_2_" value="135.0"/>
-    <param name="set_speed_3_" value="100.0"/>
-    <param name="set_speed_4_" value="90.0"/>
+    <param name="set_speed_2_" value="150.0"/>
+    <param name="set_speed_3_" value="120.0"/>
+    <param name="set_speed_4_" value="100.0"/>
 
     <!-- Pid -->
-    <param name="kp" value="0.25"/>
+    <param name="kp" value="0.3"/>
     <param name="ki" value="0.0"/>
-    <param name="kd" value="0.35"/>
+    <param name="kd" value="0.0"/>
 
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/>
     <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
-    <param name="AngleGain" value="-3.2"/>
+    <param name="AngleGain" value="-4.0"/>
     <!-- for tt02: >0, for hsp: <0 -->
 
     <!-- Topic -->

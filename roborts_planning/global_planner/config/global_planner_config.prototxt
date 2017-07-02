@@ -2,5 +2,5 @@
   selected_algorithm: "a_star_planner"
   frequency: 10
   max_retries: 8
-  goal_distance_tolerance: 0.15
-  goal_angle_tolerance: 0.15
+  goal_distance_tolerance: 0.40
+  goal_angle_tolerance: 0.40
