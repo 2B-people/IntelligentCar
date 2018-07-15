@@ -403,7 +403,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
                     loop_++;
                     if(start_speed_< baseSpeed)
                     {
-                        start_speed_ = start_speed_ + 0.5;
+                        start_speed_ = start_speed_ + 0.45;
                         cmd_vel.linear.x = (int)start_speed_;
                     }
                     else

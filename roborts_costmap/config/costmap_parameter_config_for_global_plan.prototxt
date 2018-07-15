@@ -18,7 +18,7 @@ para_costmap_interface {
   has_obstacle_layer: true
   has_static_layer: true
   inflation_file_path: "/config/inflation_layer_config.prototxt"
-  map_update_frequency: 40
+  map_update_frequency: 10
 }
 footprint {
   point {

@@ -33,7 +33,7 @@
   <node pkg="roborts_planning" type="local_planner_node" name="local_planner_node" respawn="false">
     <remap from="/odom" to="/odometry/filtered"/>
   </node>
-
+`
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
     <!-- L1 controller -->  
@@ -43,7 +43,7 @@
       <param name="Vcmd" value="2.4" /> <!-- speed of car m/s -->
       
       <!-- ESC -->
-      <param name="baseSpeed" value="1554"/> <!-- pwm for motor constant speed, 1500: stop -->
+      <param name="baseSpeed" value="1556"/> <!-- pwm for motor constant speed, 1500: stop -->
       <param name="startSpeed" value="1530"/> <!-- pwm for motor constant speed, 1500: stop -->
       <param name="controller_freq" value="35"/> 
         
@@ -59,7 +59,7 @@
 
 
   <!-- Run the rosbag -->
-  <node pkg="rosbag" type="record" name="bag_record" args="-O test.bag -a"></node>
+  <node pkg="rosbag" type="record" name="bag_record" args="-O aaaa.bag -a"></node>
 
   <!-- Run the rviz -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
