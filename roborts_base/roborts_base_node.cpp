@@ -28,8 +28,8 @@ int main(int argc, char **argv){
   if(!handle->Init()) return 1;
   
   roborts_base::Chassis chassis(handle);
-  // roborts_base::Gimbal gimbal(handle);s
-  
+  // roborts_base::Gimbal gimbal(handle);
+
   while(ros::ok()){
     handle->Spin();
     ros::spinOnce();
