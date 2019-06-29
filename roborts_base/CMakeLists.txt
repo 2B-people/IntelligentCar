@@ -5,6 +5,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_module)
 set(CMAKE_BUILD_TYPE Release)
 find_package(Threads REQUIRED)
 find_package(Glog REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf

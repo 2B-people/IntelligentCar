@@ -23,6 +23,7 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <sensor_msgs/Imu.h>
 
 #include "roborts_msgs/GimbalAngle.h"
 #include "roborts_msgs/GimbalRate.h"

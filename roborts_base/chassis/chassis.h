@@ -17,6 +17,8 @@
 
 #ifndef ROBORTS_BASE_CHASSIS_H
 #define ROBORTS_BASE_CHASSIS_H
+
+#include <eigen3/Eigen/Geometry> 
 #include "../roborts_sdk/sdk.h"
 #include "../ros_dep.h"
 
@@ -88,7 +90,7 @@ class Chassis {
   //! ros publisher for odometry information
   ros::Publisher ros_odom_pub_;
   //! ros publisher for uwb information
-  ros::Publisher ros_uwb_pub_;
+  ros::Publisher ros_imu_pub_;
 
 
   //! ros chassis odometry tf
@@ -99,6 +101,8 @@ class Chassis {
   nav_msgs::Odometry odom_;
   //! ros uwb message
   geometry_msgs::PoseStamped uwb_data_;
+
+  sensor_msgs::Imu imu_data_;
 };
 }
 #endif //ROBORTS_BASE_CHASSIS_H

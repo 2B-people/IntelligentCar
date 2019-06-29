@@ -4,7 +4,13 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_base_laser_link_broadcaster"
           args="0.15 0.0 0.05 1.57 0.0 0.0 base_link base_laser_link" />
 
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_camera_link_broadcaster"
-          args="0.0  0.0 0.0  0.0  0.0 0.0 base_link camera" /> -->
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="base_footprint2base_link" 
+          args="0.0 0.0 0.15 0.0 0.0 0.0 /base_footprint /base_link 10"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link2laser_link" 
+          args=" 0.07 0.0 0.0 0.0 0.0 0.0 /base_link /laser 10"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link2imu" 
+          args="0.1653 0.0 0.0 0.0 0.0 0.0 /base_link /IMU_link 10"/> -->
+
+
 
 </launch>
