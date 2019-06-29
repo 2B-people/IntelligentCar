@@ -6,6 +6,9 @@
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
   <rosparam command="load" file="$(find roborts_localization)/amcl/config/amcl.yaml" />
 
+  <!--rf2o_Laser_Odometry-->
+  <include file="$(find roborts_bringup)/launch/rf2o.launch.xml" />
+
   <!-- Run the robot sdk interface -->
   <include file="$(find roborts_bringup)/launch/base.launch" />
 
@@ -14,15 +17,6 @@
 
   <!-- Run the map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/$(arg map).yaml" respawn="false" />
-
-  <!-- Run the lidar node -->
-  <node name="rplidar_node" pkg="rplidar_ros" type="rplidarNode" output="screen">
-      <param name="serial_port" type="string" value="/dev/rplidar"/>
-      <param name="serial_baudrate" type="int" value="115200"/>
-      <param name="frame_id" type="string" value="base_laser_link"/>
-      <param name="inverted" type="bool" value="false"/>
-      <param name="angle_compensate" type="bool" value="true"/>
-  </node>
 
   <!-- Run the localization node -->
   <node pkg="roborts_localization" type="localization_node" name="localization_node" respawn="false" />

@@ -5,5 +5,8 @@
   <!-- Run the Base Node -->
   <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" />
 
+  <!-- Run the lidar node -->
+  <include file="$(find ls01g)/launch/ls01g.launch"/>
+  
 </launch>
 

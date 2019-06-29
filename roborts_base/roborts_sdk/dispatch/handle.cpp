@@ -19,7 +19,7 @@
 
 namespace roborts_sdk {
 Handle::Handle(std::string serial_port) {
-  device_ = std::make_shared<SerialDevice>(serial_port, 921600);
+  device_ = std::make_shared<SerialDevice>(serial_port, 115200);
   protocol_ = std::make_shared<Protocol>(device_);
 
 }
