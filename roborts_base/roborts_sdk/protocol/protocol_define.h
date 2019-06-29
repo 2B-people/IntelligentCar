@@ -53,6 +53,27 @@ typedef struct {
   int16_t v_y_mm;
 } cmd_chassis_info;
 
+
+//发送imu数据
+#define CMD_PUSH_IMU_DATA                   (0x08u)
+typedef struct 
+{ 
+  //偏航
+  float ph;
+  //线加速度
+  float ax;
+  float ay;
+  float az;
+  //角加速度
+  float aax;
+  float aay;
+  float aaz;
+  //磁场强度
+  float bx;
+  float by;
+  float bz;
+} cmd_imu_data;
+
 #define CMD_SET_CHASSIS_SPEED          (0X06u)
 typedef struct {
   int16_t vx;

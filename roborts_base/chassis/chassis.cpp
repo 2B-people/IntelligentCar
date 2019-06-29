@@ -27,9 +27,9 @@ Chassis::Chassis(std::shared_ptr<roborts_sdk::Handle> handle) : handle_(handle)
 }
 void Chassis::SDK_Init()
 {
-  handle_->CreateSubscriber<roborts_sdk::cmd_chassis_info>(CHASSIS_CMD_SET, CMD_PUSH_CHASSIS_INFO,
-                                                           CHASSIS_ADDRESS, MANIFOLD2_ADDRESS,
-                                                           std::bind(&Chassis::ChassisInfoCallback, this, std::placeholders::_1));
+  handle_->CreateSubscriber<roborts_sdk::cmd_imu_data>(CHASSIS_CMD_SET, CMD_PUSH_IMU_DATA,
+                                                       CHASSIS_ADDRESS, MANIFOLD2_ADDRESS,
+                                                       std::bind(&Chassis::ImuInfoCallback, this, std::placeholders::_1));
   // handle_->CreateSubscriber<roborts_sdk::cmd_uwb_info>(COMPATIBLE_CMD_SET, CMD_PUSH_UWB_INFO,
   //                                                      CHASSIS_ADDRESS, MANIFOLD2_ADDRESS,
   //                                                      std::bind(&Chassis::UWBInfoCallback, this, std::placeholders::_1));
@@ -58,9 +58,9 @@ void Chassis::ROS_Init()
 
   // uwb_data_.header.frame_id = "uwb";
 }
-void Chassis::ChassisInfoCallback(const std::shared_ptr<roborts_sdk::cmd_chassis_info> chassis_info)
+void Chassis::ImuInfoCallback(const std::shared_ptr<roborts_sdk::cmd_imu_data> imu_info)
 {
-  Eigen::Vector3d ea0((-0 - 12/*TODO */) * M_PI / 180.0,
+  Eigen::Vector3d ea0((-0 - imu_info->ph / 1000) * M_PI / 180.0,
                       0,
                       0);
   Eigen::Matrix3d R;
@@ -74,12 +74,12 @@ void Chassis::ChassisInfoCallback(const std::shared_ptr<roborts_sdk::cmd_chassis
   imu_data_.orientation.z = (double)q.z();
 
   imu_data_.header.stamp = ros::Time::now();
-  imu_data_.angular_velocity.x = (double)15;
-  imu_data_.angular_velocity.y = (double)17;
-  imu_data_.angular_velocity.z = (double)19;
-  imu_data_.linear_acceleration.x = 0.9 * 9.81;
-  imu_data_.linear_acceleration.y = 0.11 * 9.81;
-  imu_data_.linear_acceleration.z = 0.13 * 9.81;
+  imu_data_.angular_velocity.x = (double)imu_info->aax / 1000;
+  imu_data_.angular_velocity.y = (double)imu_info->aay / 1000;
+  imu_data_.angular_velocity.z = (double)imu_info->aaz / 1000;
+  imu_data_.linear_acceleration.x = imu_info->ax * 9.81 / 1000;
+  imu_data_.linear_acceleration.y = imu_info->ay * 9.81 / 1000;
+  imu_data_.linear_acceleration.z = imu_info->az * 9.81 / 1000;
   ros_imu_pub_.publish(imu_data_);
 }
 

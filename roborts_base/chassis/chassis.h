@@ -18,16 +18,18 @@
 #ifndef ROBORTS_BASE_CHASSIS_H
 #define ROBORTS_BASE_CHASSIS_H
 
-#include <eigen3/Eigen/Geometry> 
+#include <eigen3/Eigen/Geometry>
 #include "../roborts_sdk/sdk.h"
 #include "../ros_dep.h"
 
-namespace roborts_base {
+namespace roborts_base
+{
 /**
  * @brief ROS API for chassis module
  */
-class Chassis {
- public:
+class Chassis
+{
+public:
   /**
    * @brief Constructor of chassis including initialization of sdk and ROS
    * @param handle handler of sdk
@@ -39,7 +41,7 @@ class Chassis {
    */
   ~Chassis() = default;
 
- private:
+private:
   /**
    * @brief Initialization of sdk
    */
@@ -54,14 +56,15 @@ class Chassis {
    * @brief Chassis information callback in sdk
    * @param chassis_info Chassis information
    */
-  void ChassisInfoCallback(const std::shared_ptr<roborts_sdk::cmd_chassis_info> chassis_info);
+  // void ChassisInfoCallback(const std::shared_ptr<roborts_sdk::cmd_chassis_info> chassis_info);
 
   /**
    * @brief UWB information callback in sdk
    * @param uwb_info UWB information
    */
-  void UWBInfoCallback(const std::shared_ptr<roborts_sdk::cmd_uwb_info> uwb_info);
+  // void UWBInfoCallback(const std::shared_ptr<roborts_sdk::cmd_uwb_info> uwb_info);
 
+  void ImuInfoCallback(const std::shared_ptr<roborts_sdk::cmd_imu_data> imu_info);
   /**
    * @brief Chassis speed control callback in ROS
    * @param vel Chassis speed control data
@@ -92,7 +95,6 @@ class Chassis {
   //! ros publisher for uwb information
   ros::Publisher ros_imu_pub_;
 
-
   //! ros chassis odometry tf
   geometry_msgs::TransformStamped odom_tf_;
   //! ros chassis odometry tf broadcaster
@@ -104,5 +106,5 @@ class Chassis {
 
   sensor_msgs::Imu imu_data_;
 };
-}
+} // namespace roborts_base
 #endif //ROBORTS_BASE_CHASSIS_H
