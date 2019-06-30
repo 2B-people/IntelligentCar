@@ -42,6 +42,7 @@ add_executable(behavior_test_node
   example_behavior/chase_behavior.h
   example_behavior/patrol_behavior.h
   example_behavior/search_behavior.h
+  car_behavior/car_behavior.h
   behavior_test.cpp
   executor/chassis_executor.cpp
   )
