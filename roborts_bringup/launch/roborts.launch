@@ -1,6 +1,6 @@
 <launch>
   <master auto="start"/>
-  <arg name="map" value="3floor"/>
+  <arg name="map" value="214"/>
 
   <!--Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
@@ -31,9 +31,13 @@
     <remap from="/odom" to="/odometry/filtered"/>
   </node>
 
+<<<<<<< HEAD
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
   <!-- Run the rviz -->
+=======
+    <!-- Run the rviz -->
+>>>>>>> 03ad742c629679068d32f2d320d221ae1881299c
   <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" /> -->
 
 </launch>
