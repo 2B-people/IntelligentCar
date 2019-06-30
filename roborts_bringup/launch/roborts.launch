@@ -31,8 +31,10 @@
     <remap from="/odom" to="/odometry/filtered"/>
   </node>
 
-    <!-- Run the rviz -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
+  <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
+
+  <!-- Run the rviz -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" /> -->
 
 </launch>
 
