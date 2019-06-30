@@ -1,17 +1,17 @@
 <launch>
   <master auto="start"/>
-  <arg name="map" value="icra2019"/>
+  <arg name="map" value="3floor"/>
 
   <!--Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
   <rosparam command="load" file="$(find roborts_localization)/amcl/config/amcl.yaml" />
 
+  <!-- Run the robot sdk interface -->
+  <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
   <!--rf2o_Laser_Odometry-->
   <include file="$(find roborts_bringup)/launch/include/rf2o.launch.xml" />
   <!-- Publish static tf -->
   <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
-  <!-- Run the robot sdk interface -->
-  <include file="$(find roborts_bringup)/launch/base.launch" />
   <!-- Robot_Localization -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
@@ -30,6 +30,9 @@
   <node pkg="roborts_planning" type="local_planner_node" name="local_planner_node" respawn="false">
     <remap from="/odom" to="/odometry/filtered"/>
   </node>
+
+    <!-- Run the rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
 
 </launch>
 
