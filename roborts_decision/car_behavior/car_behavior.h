@@ -15,8 +15,8 @@ namespace roborts_decision
 class CarBehavior
 {
 public:
-  CarBehavior(ChassisExecutor* &chassis_executor,
-              Blackboard* &blackboard,
+  CarBehavior(ChassisExecutor *&chassis_executor,
+              Blackboard *&blackboard,
               const std::string &proto_file_path) : chassis_executor_(chassis_executor),
                                                     blackboard_(blackboard)
   {
@@ -30,6 +30,8 @@ public:
     chase_goal_.pose.position.y = 0;
     chase_goal_.pose.position.z = 0;
 
+    ros_rviz_sub_ = ros_nh_.subscribe("/move_base_simple/goal", 1, &CarBehavior::RvizGoalCB, this);
+
     cancel_goal_ = false;
   }
   void Run()
@@ -38,24 +40,36 @@ public:
     auto robot_map_pose = blackboard_->GetRobotMapPose();
     if (executor_state != BehaviorState::RUNNING)
     {
-      if (!cancel_goal_)
+      while (ros::ok)
       {
-        cancel_goal_ = true;
-        chase_goal_.pose.orientation.x = 0;
-        chase_goal_.pose.orientation.y = 0;
-        chase_goal_.pose.orientation.z = 1;
-        chase_goal_.pose.orientation.w = 0.044;
-
-        chase_goal_.pose.position.x = -1.33384430408;
-        chase_goal_.pose.position.y = -1.809684515;
-        chase_goal_.pose.position.z = 0;
-        chassis_executor_->Execute(chase_goal_);
-      }
-      else
-      {
-        return;
+        ros::spinOnce();
+        if (cancel_goal_)
+        {
+          chase_goal_.header.stamp = ros::Time::now();
+          chassis_executor_->Execute(chase_goal_);
+          cancel_goal_ = false;
+          return;
+        }
+        else
+        {
+          continue;
+        }
       }
     }
+  }
+
+  void RvizGoalCB(const geometry_msgs::PoseStamped::ConstPtr &vel)
+  {
+    chassis_executor_->Cancel();
+    chase_goal_.pose.orientation.x = vel->pose.orientation.x;
+    chase_goal_.pose.orientation.y = vel->pose.orientation.y;
+    chase_goal_.pose.orientation.z = vel->pose.orientation.z;
+    chase_goal_.pose.orientation.w = vel->pose.orientation.w;
+
+    chase_goal_.pose.position.x = vel->pose.position.x;
+    chase_goal_.pose.position.y = vel->pose.position.y;
+    chase_goal_.pose.position.z = vel->pose.position.z;
+    cancel_goal_ = true;
   }
 
   void Cancel()
@@ -84,11 +98,15 @@ private:
 
   //! chase goal
   geometry_msgs::PoseStamped chase_goal_;
+  //! ros node handler
+  ros::NodeHandle ros_nh_;
+  //! ros subscriber for speed control
+  ros::Subscriber ros_rviz_sub_;
 
   //! cancel flag
   bool cancel_goal_;
 };
 
-} // namespace robort_decision
+} // namespace roborts_decision
 
 #endif
