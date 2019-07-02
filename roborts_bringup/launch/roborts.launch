@@ -10,8 +10,6 @@
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
   <!--rf2o_Laser_Odometry-->
   <include file="$(find roborts_bringup)/launch/include/rf2o.launch.xml" />
-  <!-- Publish static tf -->
-  <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
   <!-- Robot_Localization -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
@@ -34,7 +32,7 @@
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
   <!-- Run the rviz -->
-  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" /> -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/rsoborts.rviz" /> -->
 
 </launch>
 

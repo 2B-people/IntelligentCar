@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="inverted" default="true" />
+    <arg name="inverted" default="false" />
     <node name="ls01g" pkg="ls01g" type="ls01g" output="screen">
         <param name="scan_topic" value="scan"/>         #设置激光数据topic名称
         <param name="laser_link" value="base_laser_link"/>     #激光坐标

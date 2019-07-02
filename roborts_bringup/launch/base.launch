@@ -3,6 +3,9 @@
   <rosparam command="load" file="$(find roborts_base)/config/roborts_base_parameter.yaml" />
 
   <!-- <include file="$(find roborts_bringup)/launch/include /art_car_tf.launch.xml" /> -->
+  
+  <!-- Publish static tf -->
+  <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
 
   <!-- Run the Base Node -->
   <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" />
