@@ -1,6 +1,7 @@
 <launch>
   <master auto="start"/>
-  <arg name="map" value="214"/>
+  <!-- <arg name="map" value="214"/> -->
+  <arg name="map" value="parking_lot"/>
 
   <!--Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />

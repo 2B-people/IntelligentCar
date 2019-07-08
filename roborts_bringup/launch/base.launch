@@ -12,6 +12,9 @@
 
   <!-- Run the lidar node -->
   <include file="$(find ls01g)/launch/ls01g.launch"/>
+
+  <!-- Run the Imu Node -->
+  <include file="$(find art_imu)/launch/imu.launch"/>  
   
 </launch>
 

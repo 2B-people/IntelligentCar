@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdint.h>
 #include <stdexcept>
 #include <boost/assert.hpp>
 #include <boost/asio.hpp>
@@ -372,7 +373,8 @@ int main(int argc, char** argv)
                   * Eigen::AngleAxisd(ea0[2], ::Eigen::Vector3d::UnitX());
                 Eigen::Quaterniond q;
                 q = R;
-                msg.orientation.w = (double)q.w();
+                // msg.orientation.w = (double)q.w();
+                msg.orientation.w = (double)d2f_euler(data + 3);
                 msg.orientation.x = (double)q.x();
                 msg.orientation.y = (double)q.y();
                 msg.orientation.z = (double)q.z();

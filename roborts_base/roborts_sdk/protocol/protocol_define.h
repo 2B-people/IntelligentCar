@@ -74,7 +74,7 @@ typedef struct
   float bz;
 } cmd_imu_data;
 
-#define CMD_SET_CHASSIS_SPEED          (0X06u)
+#define CMD_SET_CHASSIS_SPEED          (0X03u)
 typedef struct {
   int16_t vx;
   int16_t vy;
@@ -83,7 +83,7 @@ typedef struct {
   int16_t rotate_y_offset;
 } cmd_chassis_speed;
 
-#define CMD_GET_CHASSIS_PARAM          (0X07u)
+#define CMD_GET_CHASSIS_PARAM          (0X04u)
 typedef struct {
   uint16_t wheel_perimeter;
   uint16_t wheel_track;
@@ -92,7 +92,7 @@ typedef struct {
   int16_t gimbal_y_offset;
 } cmd_chassis_param;
 
-#define CMD_SET_CHASSIS_SPD_ACC        (0X08u)
+#define CMD_SET_CHASSIS_SPD_ACC        (0X05u)
 typedef struct {
   int16_t vx;
   int16_t vy;

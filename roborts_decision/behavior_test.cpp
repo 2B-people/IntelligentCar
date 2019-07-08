@@ -27,8 +27,10 @@ int main(int argc, char **argv)
   // roborts_decision::EscapeBehavior       escape_behavior(chassis_executor, blackboard, full_path);
   // roborts_decision::PatrolBehavior       patrol_behavior(chassis_executor, blackboard, full_path);
   // roborts_decision::GoalBehavior         goal_behavior(chassis_executor, blackboard);
+
+
   roborts_decision::CarBehavior CarBehavior(chassis_executor, blackboard, full_path);
-  auto command_thread = std::thread(Command);
+  //auto command_thread = std::thread(Command);
   ros::Rate rate(10);
   while (ros::ok())
   {
