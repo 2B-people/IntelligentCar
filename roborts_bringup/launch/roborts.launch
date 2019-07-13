@@ -10,9 +10,9 @@
   <!-- Run the robot sdk interface -->
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
   <!--rf2o_Laser_Odometry-->
-  <include file="$(find roborts_bringup)/launch/include/rf2o.launch.xml" />
+  <include file="$(find roborts_bringup)/lauekf_localization_nodench/include/rf2o.launch.xml" />
   <!-- Robot_Localization -->
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+  <node pkg="robot_localization" type="" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
   </node>
 
