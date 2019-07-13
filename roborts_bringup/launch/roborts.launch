@@ -1,13 +1,6 @@
 <launch>
   <master auto="start"/>
   <arg name="map" value="mymap"/>
-  <!-- <arg name="map" value="test"/> -->
-
-  <!-- for amcl -->    
-  <!-- <arg name="init_x" default="0.0" />
-  <arg name="init_y" default="0.0" />
-  <arg name="init_a" default="0.0" /> -->
-
 
   <!-- Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
@@ -17,13 +10,6 @@
   <node pkg="robot_localization" type="" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
   </node>
-
-  <!-- AMCL -->
-  <!-- <include file="$(find roborts_bringup)/launch/include/amcl.launch.xml">
-      <arg name="init_x" value="$(arg init_x)"/>
-      <arg name="init_y" value="$(arg init_y)"/>
-      <arg name="init_a" value="$(arg init_a)"/>
-  </include>  -->
 
   <!--rf2o_Laser_Odometry-->
   <include file="$(find roborts_bringup)/launch/include/rf2o.launch.xml" />
@@ -45,19 +31,20 @@
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
     <!-- L1 controller -->  
-    <node pkg="test_car" type="car_controller" name="car_controller" respawn="false" >       
+    <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" >       
       <!-- L1 -->
       <param name="Vcmd" value="1.0" /> <!-- speed of car m/s -->        
       <!-- ESC -->
       <param name="baseSpeed" value="1550"/> <!-- pwm for motor constant speed, 1500: stop --> 
-      <param name="controller_freq" value="35"/> 
+      <param name="controller_freq" value="30"/> 
  
       <!-- Servo -->
       <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
       <param name="AngleGain" value="-6.0"/> <!-- for tt02: >0, for hsp: <0 -->	
-      <param name="GasGain" value="1.0"/>
+      <param name="GasGain" value="3.0"/>
 
       <remap from="/odom" to="/odometry/filtered"/>
+      <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory"/>
   
   </node>
 
