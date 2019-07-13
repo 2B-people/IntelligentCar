@@ -12,15 +12,7 @@
   <!-- Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
   <rosparam command="load" file="$(find roborts_localization)/amcl/config/amcl.yaml" />
-<<<<<<< HEAD
-
-  <!-- Run the robot sdk interface -->
-  <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
-  <!--rf2o_Laser_Odometry-->
-  <include file="$(find roborts_bringup)/lauekf_localization_nodench/include/rf2o.launch.xml" />
-=======
   
->>>>>>> a7f047530e87da6f06303b42a172b9f6311f848a
   <!-- Robot_Localization -->
   <node pkg="robot_localization" type="" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
