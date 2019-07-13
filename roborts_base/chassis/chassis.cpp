@@ -73,7 +73,6 @@ void Chassis::ImuInfoCallback(const std::shared_ptr<roborts_sdk::cmd_imu_data> i
 
 void Chassis::ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel)
 {
-  // ROS_INFO("aaaa");
 
   roborts_sdk::cmd_chassis_speed chassis_speed;
   chassis_speed.vx = vel->linear.x;
@@ -87,7 +86,7 @@ void Chassis::ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel
 
 void Chassis::ChassisSpeedAccCtrlCallback(const roborts_msgs::TwistAccel::ConstPtr &vel_acc)
 {
-  // ROS_INFO("aaaa");
+
   roborts_sdk::cmd_chassis_spd_acc chassis_spd_acc;
   chassis_spd_acc.vx = vel_acc->twist.linear.x * 1000;
   chassis_spd_acc.vy = 0.0;

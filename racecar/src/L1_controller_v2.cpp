@@ -256,10 +256,10 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
         {
             geometry_msgs::PoseStamped map_path_pose = map_path.poses[i];
             geometry_msgs::PoseStamped odom_path_pose;
-
+            ros::Time t = ros::Time(0);
             try
             {
-                tf_listener.transformPose("odom", ros::Time(0) , map_path_pose, "map" ,odom_path_pose);
+                tf_listener.transformPose("odom", t , map_path_pose, "map" ,odom_path_pose);
                 geometry_msgs::Point odom_path_wayPt = odom_path_pose.pose.position;
                 bool _isForwardWayPt = isForwardWayPt(odom_path_wayPt,carPose);
 
@@ -276,8 +276,8 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
             }
             catch(tf::TransformException &ex)
             {
-                ROS_ERROR("%s",ex.what());
-                ros::Duration(1.0).sleep();
+                // ROS_ERROR("%s",ex.what());
+                ros::Duration(0.01).sleep();
             }
         }
         

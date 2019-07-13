@@ -11,7 +11,7 @@
   <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" />
 
   <!-- Run the lidar node -->
-  <include file="$(find ls01g)/launch/ls01g.launch"/>
+  <include file="$(find roborts_bringup)/launch/include/ls01g.launch"/>
 
   <!-- Run the Imu Node -->
   <include file="$(find art_imu)/launch/imu.launch"/>  
