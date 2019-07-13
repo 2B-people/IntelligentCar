@@ -1,5 +1,5 @@
 odom_frame_id        : "odom"
-base_frame_id        : "base_link"
+base_frame_id        : "base_footprint"
 global_frame_id      : "map"
 laser_topic_name     : "scan"
 map_topic_name       : "map"
