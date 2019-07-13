@@ -1,20 +1,40 @@
 <launch>
   <master auto="start"/>
-  <!-- <arg name="map" value="214"/> -->
-  <arg name="map" value="parking_lot"/>
+  <arg name="map" value="mymap"/>
+  <!-- <arg name="map" value="test"/> -->
 
-  <!--Load parameters for localization node  -->
+  <!-- for amcl -->    
+  <!-- <arg name="init_x" default="0.0" />
+  <arg name="init_y" default="0.0" />
+  <arg name="init_a" default="0.0" /> -->
+
+
+  <!-- Load parameters for localization node  -->
   <rosparam command="load" file="$(find roborts_localization)/config/localization.yaml" />
   <rosparam command="load" file="$(find roborts_localization)/amcl/config/amcl.yaml" />
+<<<<<<< HEAD
 
   <!-- Run the robot sdk interface -->
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
   <!--rf2o_Laser_Odometry-->
   <include file="$(find roborts_bringup)/lauekf_localization_nodench/include/rf2o.launch.xml" />
+=======
+  
+>>>>>>> a7f047530e87da6f06303b42a172b9f6311f848a
   <!-- Robot_Localization -->
   <node pkg="robot_localization" type="" name="ekf_se" clear_params="true">
     <rosparam command="load" file="$(find roborts_bringup)/launch/include/ekf_params.yaml" />
   </node>
+
+  <!-- AMCL -->
+  <!-- <include file="$(find roborts_bringup)/launch/include/amcl.launch.xml">
+      <arg name="init_x" value="$(arg init_x)"/>
+      <arg name="init_y" value="$(arg init_y)"/>
+      <arg name="init_a" value="$(arg init_a)"/>
+  </include>  -->
+
+  <!--rf2o_Laser_Odometry-->
+  <include file="$(find roborts_bringup)/launch/include/rf2o.launch.xml" />
 
   <!-- Run the map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/$(arg map).yaml" respawn="false" />
@@ -32,8 +52,26 @@
 
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
+    <!-- L1 controller -->  
+    <node pkg="test_car" type="car_controller" name="car_controller" respawn="false" >       
+      <!-- L1 -->
+      <param name="Vcmd" value="1.0" /> <!-- speed of car m/s -->        
+      <!-- ESC -->
+      <param name="baseSpeed" value="1550"/> <!-- pwm for motor constant speed, 1500: stop --> 
+      <param name="controller_freq" value="35"/> 
+ 
+      <!-- Servo -->
+      <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
+      <param name="AngleGain" value="-6.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+      <param name="GasGain" value="1.0"/>
+
+      <remap from="/odom" to="/odometry/filtered"/>
+  
+  </node>
+
+
   <!-- Run the rviz -->
-  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/rsoborts.rviz" /> -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
 
 </launch>
 

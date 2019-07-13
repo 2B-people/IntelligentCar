@@ -60,35 +60,26 @@ void Chassis::ROS_Init()
 }
 void Chassis::ImuInfoCallback(const std::shared_ptr<roborts_sdk::cmd_imu_data> imu_info)
 {
-  // Eigen::Vector3d ea0((-0 - imu_info->ph / 1000) * M_PI / 180.0,
-  //                     0,
-  //                     0);
-  // Eigen::Matrix3d R;
-  // R = Eigen::AngleAxisd(ea0[0], ::Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(ea0[1], ::Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(ea0[2], ::Eigen::Vector3d::UnitX());
-  // Eigen::Quaterniond q;
-  // q = R;
 
-  // imu_data_.orientation.w = (double)q.w();
-  // imu_data_.orientation.x = (double)q.x();
-  // imu_data_.orientation.y = (double)q.y();
-  // imu_data_.orientation.z = (double)q.z();
-
-  // imu_data_.header.stamp = ros::Time::now();
-  // imu_data_.angular_velocity.x = (double)imu_info->aax / 1000;
-  // imu_data_.angular_velocity.y = (double)imu_info->aay / 1000;
-  // imu_data_.angular_velocity.z = (double)imu_info->aaz / 1000;
-  // imu_data_.linear_acceleration.x = imu_info->ax * 9.81 / 1000;
-  // imu_data_.linear_acceleration.y = imu_info->ay * 9.81 / 1000;
-  // imu_data_.linear_acceleration.z = imu_info->az * 9.81 / 1000;
-  // ros_imu_pub_.publish(imu_data_);
+  imu_data_.header.stamp = ros::Time::now();
+  imu_data_.angular_velocity.x = 0.0;
+  imu_data_.angular_velocity.y = 0.0;
+  imu_data_.angular_velocity.z = 0.0;
+  imu_data_.linear_acceleration.x = imu_info->ax / 1000.0;
+  imu_data_.linear_acceleration.y = 0.0;
+  imu_data_.linear_acceleration.z = 0.0;
+  ros_imu_pub_.publish(imu_data_);
 }
 
 void Chassis::ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel)
 {
+  // ROS_INFO("aaaa");
+
   roborts_sdk::cmd_chassis_speed chassis_speed;
   chassis_speed.vx = vel->linear.x;
   chassis_speed.vy = 0.0;
-  chassis_speed.vw = vel->angular.z;
+  // 2500.0 - twist.angular.z * 2000.0 / 180.0;
+  chassis_speed.vw = 2500.0 - vel->angular.z * 2000.0 / 180.0;
   chassis_speed.rotate_x_offset = 0;
   chassis_speed.rotate_y_offset = 0;
   chassis_speed_pub_->Publish(chassis_speed);
@@ -96,6 +87,7 @@ void Chassis::ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel
 
 void Chassis::ChassisSpeedAccCtrlCallback(const roborts_msgs::TwistAccel::ConstPtr &vel_acc)
 {
+  // ROS_INFO("aaaa");
   roborts_sdk::cmd_chassis_spd_acc chassis_spd_acc;
   chassis_spd_acc.vx = vel_acc->twist.linear.x * 1000;
   chassis_spd_acc.vy = 0.0;

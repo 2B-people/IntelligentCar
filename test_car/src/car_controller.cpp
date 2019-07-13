@@ -120,15 +120,27 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             cmd_vel.angular.z = baseAngle + getSteeringAngle(eta) * Angle_gain;
             /*Estimate Gas Input*/
 
+<<<<<<< HEAD
             if (!goal_reached)
             {
                 if (start_loop_flag++ <= 10)
                 {
 
                     double u = getGasInput(carVel.linear.x);
+=======
+            // if(!goal_reached)
+            // {
+            //     if(start_loop_flag++ <= 10)
+            //     {
+
+            //         double u = getGasInput(carVel.linear.x);
+                    
+            //         cmd_vel.linear.x = start_speed + PIDCal(&pid_speed,u);
+>>>>>>> a7f047530e87da6f06303b42a172b9f6311f848a
 
                     cmd_vel.linear.x = start_speed + PIDCal(&pid_speed, u);
 
+<<<<<<< HEAD
                     start_speed += 4;
                     if (cmd_vel.linear.x > baseSpeed)
                         cmd_vel.linear.x = baseSpeed;
@@ -139,12 +151,29 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     ROS_INFO("!goal_reached");
                     double u = getGasInput(carVel.linear.x);
                     cmd_vel.linear.x = baseSpeed + PIDCal(&pid_speed, u);
+=======
+
+            //          start_speed += 4;
+            //          if(cmd_vel.linear.x > baseSpeed)   cmd_vel.linear.x = baseSpeed;
+            //          ROS_INFO("baseSpeed = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+            //     }
+            //     else
+            //     {
+            //         //ROS_INFO("!goal_reached");
+            //         double u = getGasInput(carVel.linear.x);                   
+            //         cmd_vel.linear.x = baseSpeed + PIDCal(&pid_speed,u);
+                    
+            //         ROS_INFO("Gas = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+            //     }  
+            // }
+>>>>>>> a7f047530e87da6f06303b42a172b9f6311f848a
 
                     ROS_INFO("Gas = %.2f\tSteering angle = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
                 }
             }
         }
     }
+<<<<<<< HEAD
     if (car_stop > 0)
     {
         start_loop_flag = 0;
@@ -174,6 +203,39 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
         car_stop = 0;
         ROS_INFO("car run cmd_vel= %f",cmd_vel.linear.x);
     }
+=======
+    // if(car_stop > 0)
+    // {
+    //     start_loop_flag = 0;
+    //     if(carVel.linear.x > 0)
+    //     {
+
+    //         cmd_vel.linear.x = 1300; //反向刹车
+    //         pub_.publish(cmd_vel);
+    //        // for(int i=0;i<20;i++)
+    //        // {
+    //        //     pub_.publish(cmd_vel);
+    //        //     sleep(0.1);
+    //        //     ROS_INFO("cat stop cmd_vel= %f",cmd_vel.linear.x);
+    //        // }
+            
+    //     }
+    //     else
+    //     {
+    //         car_stop = 0;
+    //         cmd_vel.linear.x = 1500;
+    //         pub_.publish(cmd_vel);
+
+    //         //ROS_INFO("cmd_vel= %f",cmd_vel.linear.x);
+    //     }
+    // }
+    // else
+    // {
+    pub_.publish(cmd_vel);
+    //     car_stop = 0;
+    //     //ROS_INFO("car run cmd_vel= %f",cmd_vel.linear.x);
+    // }
+>>>>>>> a7f047530e87da6f06303b42a172b9f6311f848a
 }
 
 /*****************/

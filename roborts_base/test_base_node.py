@@ -64,7 +64,7 @@ if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
     
     rospy.init_node('robot_teleop')
-    pub1 = rospy.Publisher('cmd_vel', Twist, queue_size=5)
+    pub1 = rospy.Publisher('car/cmd_vel', Twist, queue_size=5)
     pub2 = rospy.Publisher('cmd_vel_acc', TwistAccel, queue_size=8)
 
     x = 0
