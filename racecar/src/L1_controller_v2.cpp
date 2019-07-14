@@ -276,7 +276,7 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
             }
             catch(tf::TransformException &ex)
             {
-                // ROS_ERROR("%s",ex.what());
+                ROS_ERROR("%s",ex.what());
                 ros::Duration(0.01).sleep();
             }
         }
