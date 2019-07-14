@@ -11,7 +11,7 @@ trajectory_opt {
     allow_init_with_backwards_motion: false 
     global_plan_viapoint_sep: 1.5
     via_points_ordered: False
-    max_global_plan_lookahead_dist: 2.0
+    max_global_plan_lookahead_dist: 4.0
     exact_arc_length: true
     force_reinit_new_goal_dist: 0.8
     feasibility_check_no_poses: 5
@@ -21,11 +21,11 @@ trajectory_opt {
 }
 
 kinematics_opt {
-    max_vel_x: 0.8s
+    max_vel_x: 0.95
     max_vel_x_backwards: 0.2
     max_vel_y: 0
-    max_vel_theta: 4.0
-    acc_lim_x: 1.0
+    max_vel_theta: 5.0
+    acc_lim_x: 0.5
     acc_lim_y: 0
     acc_lim_theta: 10.0
     min_turning_radius: 1.5

@@ -4,12 +4,12 @@ para_basic {
 }
 para_costmap_interface {
   global_frame: "odom"
-  robot_base_frame: "base_link"
+  robot_base_frame: "base_footprint"
   footprint_padding: 0.05
   transform_tolerance: 1.0
   distance_threshold: 1.0
-  map_width: 5.0
-  map_height: 3.0
+  map_width: 8.0
+  map_height: 5.0
   map_resolution: 0.04
   map_origin_x: 0.0
   map_origin_y: 0.0
