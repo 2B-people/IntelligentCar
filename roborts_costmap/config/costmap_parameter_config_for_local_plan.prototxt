@@ -4,7 +4,7 @@ para_basic {
 }
 para_costmap_interface {
   global_frame: "odom"
-  robot_base_frame: "base_footprint"
+  robot_base_frame: "base_link"
   footprint_padding: 0.05
   transform_tolerance: 1.0
   distance_threshold: 1.0

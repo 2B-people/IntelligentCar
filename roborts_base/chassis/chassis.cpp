@@ -98,4 +98,55 @@ void Chassis::ChassisSpeedAccCtrlCallback(const roborts_msgs::TwistAccel::ConstP
   chassis_spd_acc.rotate_y_offset = 0;
   chassis_spd_acc_pub_->Publish(chassis_spd_acc);
 }
+
+/*******************************************RACECAR********************************************************** */
+
+Car::Car(std::shared_ptr<roborts_sdk::Handle> handle) : handle_(handle)
+{
+  SDK_Init();
+  ROS_Init();
+}
+void Car::SDK_Init()
+{
+  chassis_speed_pub_ = handle_->CreatePublisher<roborts_sdk::cmd_chassis_speed>(CHASSIS_CMD_SET, CMD_SET_CHASSIS_SPEED,
+                                                                                MANIFOLD2_ADDRESS, CHASSIS_ADDRESS);
+  chassis_spd_acc_pub_ = handle_->CreatePublisher<roborts_sdk::cmd_chassis_spd_acc>(CHASSIS_CMD_SET, CMD_SET_CHASSIS_SPD_ACC,
+                                                                                    MANIFOLD2_ADDRESS, CHASSIS_ADDRESS);
+}
+void Car::ROS_Init()
+{
+  //ros subscriber
+  ros_sub_cmd_chassis_vel_ = ros_nh_.subscribe("/car/cmd_vel", 1, &Car::ChassisSpeedCtrlCallback, this);
+  ros_sub_cmd_chassis_vel_acc_ = ros_nh_.subscribe("cmd_vel", 1, &Car::ChassisSpeedAccCtrlCallback, this);
+
+}
+
+void Car::ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel)
+{
+
+  roborts_sdk::cmd_chassis_speed chassis_speed;
+  chassis_speed.vx = vel->linear.x;
+  chassis_speed.vy = 0.0;
+  // 2500.0 - twist.angular.z * 2000.0 / 180.0;
+  chassis_speed.vw = 2500.0 - vel->angular.z * 2000.0 / 180.0;
+  chassis_speed.rotate_x_offset = 0;
+  chassis_speed.rotate_y_offset = 0;
+  chassis_speed_pub_->Publish(chassis_speed);
+}
+
+void Car::ChassisSpeedAccCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel_acc)
+{
+
+  roborts_sdk::cmd_chassis_spd_acc chassis_spd_acc;
+  chassis_spd_acc.vx = vel_acc->linear.x * 1000;
+  chassis_spd_acc.vy = 0.0;
+  chassis_spd_acc.vw = vel_acc->angular.z * 1000;
+  chassis_spd_acc.ax = vel_acc->linear.x * 1000;
+  chassis_spd_acc.ay = 0.0;
+  chassis_spd_acc.wz = vel_acc->angular.z * 1000;
+  chassis_spd_acc.rotate_x_offset = 0;
+  chassis_spd_acc.rotate_y_offset = 0;
+  chassis_spd_acc_pub_->Publish(chassis_spd_acc);
+}
+
 } // namespace roborts_base

@@ -106,5 +106,57 @@ private:
 
   sensor_msgs::Imu imu_data_;
 };
+
+/**
+ * @brief ROS API for Car module
+ */
+class Car
+{
+public:
+  /**
+   * @brief Constructor of Car including initialization of sdk and ROS
+   * @param handle handler of sdk
+   */
+  Car(std::shared_ptr<roborts_sdk::Handle> handle);
+
+  /**
+   * @brief Destructor of Car
+   */
+  ~Car() = default;
+
+private:
+  /**
+   * @brief Initialization of sdk
+   */
+  void SDK_Init();
+
+  /**
+   * @brief Initialization of ROS
+   */
+  void ROS_Init();
+
+
+  void ChassisSpeedCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel);
+
+  /**
+   * @brief Chassis speed and acceleration control callback in ROS
+   * @param vel_acc Chassis speed and acceleration control data
+   */
+  void ChassisSpeedAccCtrlCallback(const geometry_msgs::Twist::ConstPtr &vel_acc);
+
+  //! sdk handler
+  std::shared_ptr<roborts_sdk::Handle> handle_;
+  //! sdk publisher for chassis speed control
+  std::shared_ptr<roborts_sdk::Publisher<roborts_sdk::cmd_chassis_speed>> chassis_speed_pub_;
+  //! sdk publisher for chassis speed and acceleration control
+  std::shared_ptr<roborts_sdk::Publisher<roborts_sdk::cmd_chassis_spd_acc>> chassis_spd_acc_pub_;
+
+  //! ros node handler
+  ros::NodeHandle ros_nh_;
+  //! ros subscriber for speed control
+  ros::Subscriber ros_sub_cmd_chassis_vel_;
+  //! ros subscriber for chassis speed and acceleration control
+  ros::Subscriber ros_sub_cmd_chassis_vel_acc_;
+};
 } // namespace roborts_base
 #endif //ROBORTS_BASE_CHASSIS_H

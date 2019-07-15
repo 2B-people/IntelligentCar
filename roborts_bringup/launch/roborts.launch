@@ -51,15 +51,15 @@
 
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-    <param name="AngleGain" value="-3.5"/> <!-- for tt02: >0, for hsp: <0 -->	
-    <param name="GasGain" value="2.0"/>
+    <param name="AngleGain" value="-3.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+    <param name="GasGain" value="1.5"/>
 
     <remap from="/odom" to="/odometry/filtered"/>
     <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory"/>
   </node>
 
   <!-- Run the rosbag -->
-  <!-- <node pkg="rosbag" type="record" name="bag_record" args="-a"></node> -->
+  <node pkg="rosbag" type="record" name="bag_record" args="-O test.bag -a"></node>
 
   <!-- Run the rviz -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />

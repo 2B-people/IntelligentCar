@@ -27,7 +27,8 @@ int main(int argc, char **argv){
   auto handle = std::make_shared<roborts_sdk::Handle>(config.serial_port);
   if(!handle->Init()) return 1;
   
-  roborts_base::Chassis chassis(handle);
+  // roborts_base::Chassis chassis(handle);
+  roborts_base::Car chassis(handle);
   // roborts_base::Gimbal gimbal(handle);
 
   while(ros::ok()){

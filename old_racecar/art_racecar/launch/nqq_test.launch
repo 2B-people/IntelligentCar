@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- SENSOR DEVICE -->
+    <master auto="start"/>
+    <arg name="map" value="mymap"/>
+    
+    <!-- Map server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find art_racecar)/map/$(arg map).yaml"/>
+
+    <!-- ODOMETRY -->
+    <!--rf2o_Laser_Odometry-->
+    <include file="$(find art_racecar)/launch/includes/rf2o.launch.xml" />
+    <!-- Robot_Localization -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+        <rosparam command="load" file="$(find art_racecar)/param/ekf_params.yaml" />
+    </node>
+
+    <!-- Localization -->
+    <!-- for amcl -->
+    <arg name="init_x" default="0.0" />
+    <arg name="init_y" default="0.0" />
+    <arg name="init_a" default="0.0" />
+    <!-- AMCL -->    
+    <include file="$(find art_racecar)/launch/includes/amcl.launch.xml">
+        <arg name="init_x" value="$(arg init_x)"/>
+        <arg name="init_y" value="$(arg init_y)"/>
+        <arg name="init_a" value="$(arg init_a)"/>
+    </include>
+
+    <!-- Navstack -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base">
+        <rosparam file="$(find art_racecar)/param/teb_local_planner_params.yaml" command="load"/>
+        <rosparam file="$(find art_racecar)/param/local_costmap_params.yaml" command="load"/>
+        <rosparam file="$(find art_racecar)/param/global_costmap_params.yaml" command="load"/>
+        <rosparam file="$(find art_racecar)/param/base_global_planner_params.yaml" command="load"/>
+        <rosparam file="$(find art_racecar)/param/move_base_params.yaml" command="load"/>
+
+		<param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <param name="base_global_planner" value="navfn/NavfnROS"/>  
+		<param name="planner_frequency" value="5.0" />
+		<param name="planner_patience" value="15.0" />
+
+		<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+		<param name="controller_frequency" value="5.0" />
+		<param name="controller_patience" value="15.0" />
+
+        <remap from="/odom" to="/odometry/filtered"/>
+    </node>
+
+    <!-- L1 controller -->  
+    <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" >            
+        <!-- ESC -->
+        <param name="controller_freq" value="50"/> 
+
+        <!-- Servo -->
+        <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
+        <param name="AngleGain" value="-3.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+
+        <remap from="/odometry/filtered" to="odom" />
+        <remap from="/move_base_node/NavfnROS/plan" to="/move_base/TebLocalPlannerROS/local_plan" /> 
+    </node>
+
+    <!-- Run the rosbag -->
+    <node pkg="rosbag" type="record" name="bag_record" args="-a"></node>
+
+    <!-- Run the rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
+
+
+</launch>
