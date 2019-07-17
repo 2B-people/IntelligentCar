@@ -99,7 +99,7 @@ L1Controller::L1Controller()
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
     path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
     goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
-    marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
+    // marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
     pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
 
     //Timer
@@ -122,7 +122,7 @@ L1Controller::L1Controller()
     ROS_INFO("[param] Lfw: %f", Lfw);
 
     //Visualization Marker Settings
-    initMarker();
+    // initMarker();
 }
 
 
@@ -191,7 +191,7 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goalMsg)
 
         /*Draw Goal on RVIZ*/
         goal_circle.pose = odom_goal.pose;
-        marker_pub.publish(goal_circle);
+        // marker_pub.publish(goal_circle);
     }
     catch(tf::TransformException &ex)
     {
@@ -276,7 +276,7 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
             }
             catch(tf::TransformException &ex)
             {
-                ROS_ERROR("%s",ex.what());
+                // ROS_ERROR("%s",ex.what());
                 ros::Duration(0.01).sleep();
             }
         }
@@ -302,8 +302,8 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
         line_strip.points.push_back(forwardPt);
     }
 
-    marker_pub.publish(points);
-    marker_pub.publish(line_strip);
+    // marker_pub.publish(points);
+    // marker_pub.publish(line_strip);
     
     odom_car2WayPtVec.x = cos(carPose_yaw)*(forwardPt.x - carPose_pos.x) + sin(carPose_yaw)*(forwardPt.y - carPose_pos.y);
     odom_car2WayPtVec.y = -sin(carPose_yaw)*(forwardPt.x - carPose_pos.x) + cos(carPose_yaw)*(forwardPt.y - carPose_pos.y);
@@ -389,13 +389,13 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
         {
             cmd_vel.angular.z = baseAngle + getSteeringAngle(eta)*Angle_gain;
             /*Estimate Gas Input*/
-            if(!goal_reached)
-            {
-                //double u = getGasInput(carVel.linear.x);
-                //cmd_vel.linear.x = baseSpeed - u;
-                cmd_vel.linear.x = baseSpeed;
-                ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
-            }
+            // if(!goal_reached)
+            // {
+            //     double u = getGasInput(carVel.linear.x);
+            //     //cmd_vel.linear.x = baseSpeed - u;
+            //     cmd_vel.linear.x = baseSpeed;
+            //     ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+            // }
         }
     }
     pub_.publish(cmd_vel);

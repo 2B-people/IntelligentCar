@@ -26,10 +26,13 @@ int main(int argc, char **argv){
   config.GetParam(&nh);
   auto handle = std::make_shared<roborts_sdk::Handle>(config.serial_port);
   if(!handle->Init()) return 1;
+
+  // new way
+  roborts_base::Chassis chassis(handle);
   
-  // roborts_base::Chassis chassis(handle);
-  roborts_base::Car chassis(handle);
-  // roborts_base::Gimbal gimbal(handle);
+  // old way
+  // roborts_base::Car chassis(handle);
+
 
   while(ros::ok()){
     handle->Spin();
