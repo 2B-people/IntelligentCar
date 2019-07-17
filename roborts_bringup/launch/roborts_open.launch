@@ -36,18 +36,20 @@
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
   <!-- L1 controller -->  
-  <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" >           
+  <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen">             
+    <!-- L1 -->
+    <param name="Vcmd" value="1.5" /> <!-- speed of car m/s -->        
     <!-- ESC -->
-    <param name="controller_freq" value="50"/> 
-
+    <param name="baseSpeed" value="1550"/> <!-- pwm for motor constant speed, 1500: stop --> 
+ 
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-    <param name="AngleGain" value="-4.5"/> <!-- for tt02: >0, for hsp: <0 -->	
-    <param name="GasGain" value="1.5"/>
+    <param name="AngleGain" value="-3.5"/> <!-- for tt02: >0, for hsp: <0 -->	
+    <param name="GasGain" value="0.5"/> <!-- for tt02: >0, for hsp: <0 -->	
 
     <!-- Topic Remap-->
-    <remap from="/odom" to="/odometry/filtered"/>
     <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory"/>
+    
   </node>
 
   <!-- Run the rosbag -->

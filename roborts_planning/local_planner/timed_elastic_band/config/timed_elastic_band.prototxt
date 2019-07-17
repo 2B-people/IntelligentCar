@@ -8,7 +8,7 @@ trajectory_opt {
     dt_ref: 0.15
     dt_hysteresis: 0.01
     global_plan_overwrite_orientation: True 
-    allow_init_with_backwards_motion: False 
+    allow_init_with_backwards_motion: True 
     global_plan_viapoint_sep: 1.3
     via_points_ordered: False
     max_global_plan_lookahead_dist: 2.5
