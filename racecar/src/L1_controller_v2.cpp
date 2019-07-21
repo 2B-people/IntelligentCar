@@ -2,19 +2,15 @@
 Copyright (c) 2017, ChanYuan KUO, YoRu LU,
 latest editor: HaoChih, LIN
 All rights reserved. (Hypha ROS Workshop)
-
 This file is part of hypha_racecar package.
-
 hypha_racecar is free software: you can redistribute it and/or modify
-it under the tersms of the GNU LESSER GENERAL PUBLIC LICENSE as published
+it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published
 by the Free Software Foundation, either version 3 of the License, or
 any later version.
-
 hypha_racecar is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU LESSER GENERAL PUBLIC LICENSE for more details.
-
 You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
 along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -65,8 +61,9 @@ class L1Controller
         double L, Lfw, Lrv, Vcmd, lfw, lrv, steering, u, v;
         double Gas_gain, baseAngle, Angle_gain, goalRadius;
         int controller_freq, baseSpeed;
+        int start_loop_,loop_;
+        double start_speed_;
         bool foundForwardPt, goal_received, goal_reached;
-        int car_stop;
 
         void odomCB(const nav_msgs::Odometry::ConstPtr& odomMsg);
         void pathCB(const nav_msgs::Path::ConstPtr& pathMsg);
@@ -84,18 +81,22 @@ L1Controller::L1Controller()
 
     //Car parameter
     pn.param("L", L, 0.26);
-    pn.param("Lrv", Lrv, 5.0);
-    pn.param("lrv", lrv, 5.0);
-    
+    pn.param("Lrv", Lrv, 10.0);
     pn.param("Vcmd", Vcmd, 1.0);
     pn.param("lfw", lfw, 0.13);
+    pn.param("lrv", lrv, 10.0);
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
     pn.param("GasGain", Gas_gain, 1.0);
-    pn.param("baseSpeed", baseSpeed, 1470);
+    pn.param("baseSpeed", baseSpeed, 1550);
     pn.param("baseAngle", baseAngle, 90.0);
+
+    //nqq do
+    pn.param("startSpeed", start_speed_, 1510.0);
+    pn.param("startLoop", start_loop_, 200);
+    loop_ = 0;
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
@@ -115,7 +116,6 @@ L1Controller::L1Controller()
     goal_reached = false;
     cmd_vel.linear.x = 1500; // 1500 for stop
     cmd_vel.angular.z = baseAngle;
-    car_stop = 0;
 
     //Show info
     ROS_INFO("[param] baseSpeed: %d", baseSpeed);
@@ -189,6 +189,10 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goalMsg)
         geometry_msgs::PoseStamped odom_goal;
         tf_listener.transformPose("odom", ros::Time(0) , *goalMsg, "map" ,odom_goal);
         odom_goal_pos = odom_goal.pose.position;
+        for(int i = 0;i<6;i++)
+        {
+            ros::Duration(1.0).sleep();
+        }
         goal_received = true;
         goal_reached = false;
 
@@ -259,11 +263,10 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
         {
             geometry_msgs::PoseStamped map_path_pose = map_path.poses[i];
             geometry_msgs::PoseStamped odom_path_pose;
-            //ROS_INFO("Count:%d",i);
-            ros::Time t = ros::Time(0);
+
             try
-            {                
-                tf_listener.transformPose("odom", t , map_path_pose, "map" ,odom_path_pose);
+            {
+                tf_listener.transformPose("odom", ros::Time(0) , map_path_pose, "map" ,odom_path_pose);
                 geometry_msgs::Point odom_path_wayPt = odom_path_pose.pose.position;
                 bool _isForwardWayPt = isForwardWayPt(odom_path_wayPt,carPose);
 
@@ -372,7 +375,6 @@ void L1Controller::goalReachingCB(const ros::TimerEvent&)
         {
             goal_reached = true;
             goal_received = false;
-            car_stop = 100;
             ROS_INFO("Goal Reached !");
         }
     }
@@ -389,56 +391,40 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
     if(goal_received)
     {
         /*Estimate Steering Angle*/
-        double eta = getEta(carPose);  
+        double eta = getEta(carPose);          
         if(foundForwardPt)
-        {
-
+        {   
             cmd_vel.angular.z = baseAngle + getSteeringAngle(eta)*Angle_gain;
             /*Estimate Gas Input*/
-
             if(!goal_reached)
             {
-                //ROS_INFO("!goal_reached");
-                double u = getGasInput(carVel.linear.x);                   
-                cmd_vel.linear.x = baseSpeed + u;
-                    
-                ROS_INFO("Gas = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+                if(loop_ <= start_loop_)
+                {
+                    loop_++;
+                    if(start_speed_< baseSpeed)
+                    {
+                        start_speed_ = start_speed_ + 0.3;
+                        cmd_vel.linear.x = (int)start_speed_;
+                    }
+                    else
+                    {
+                        double u = getGasInput(carVel.linear.x);
+                        cmd_vel.linear.x = baseSpeed - u;
+                    }
+                    ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);                    
+                }
+                else
+                {
+                    double u = getGasInput(carVel.linear.x);
+                    cmd_vel.linear.x = baseSpeed - u;
+                    ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
+                }
+                
             }
-
         }
     }
-    if(car_stop > 0)
-    {
-        // if(carVel.linear.x > 0)
-        // {
-
-        //     cmd_vel.linear.x = 1300; //反向刹车
-        //     pub_.publish(cmd_vel);
-        //    // for(int i=0;i<20;i++)
-        //    // {
-        //    //     pub_.publish(cmd_vel);
-        //    //     sleep(0.1);
-        //    //     ROS_INFO("cat stop cmd_vel= %f",cmd_vel.linear.x);
-        //    // }
-            
-        // 
-        // else
-        {
-            car_stop = 0;
-            cmd_vel.linear.x = 1500;
-            pub_.publish(cmd_vel);
-
-            ROS_INFO("cmd_vel= %f",cmd_vel.linear.x);
-        }
-    }
-    else
-    {
-        pub_.publish(cmd_vel);
-        car_stop = 0;
-        //ROS_INFO("car run cmd_vel= %f",cmd_vel.linear.x);
-    }
+    pub_.publish(cmd_vel);
 }
-
 
 /*****************/
 /* MAIN FUNCTION */

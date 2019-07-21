@@ -11,8 +11,8 @@ trajectory_opt {
     allow_init_with_backwards_motion: False 
     global_plan_viapoint_sep: 20.0
     via_points_ordered: False
-    max_global_plan_lookahead_dist: 4.0
-    exact_arc_length: False
+    max_global_plan_lookahead_dist: 4.3
+    exact_arc_length: True
     force_reinit_new_goal_dist: 0.8
     feasibility_check_no_poses: 2
     publish_feedback: False
@@ -21,15 +21,15 @@ trajectory_opt {
 }
 
 kinematics_opt {
-    max_vel_x: 10.0
+    max_vel_x: 15.0
     max_vel_x_backwards: 0.0
     max_vel_y: 0.0
     max_vel_theta: 10.0
-    acc_lim_x: 1.5
+    acc_lim_x: 2.0
     acc_lim_y: 0.0
     acc_lim_theta: 2.0
     min_turning_radius: 1.8
-    wheelbase: 0.3
+    wheelbase: 0.34
     cmd_angle_instead_rotvel: True
 }
 
@@ -86,7 +86,7 @@ optimize_info {
     weight_kinematics_forward_drive: 1
     weight_kinematics_turning_radius: 1
     weight_optimaltime: 1
-    weight_obstacle: 60
+    weight_obstacle: 65
     weight_inflation: 0.1
     weight_dynamic_obstacle: 10
     weight_viapoint: 10
