@@ -33,7 +33,7 @@ along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PI 3.14159265358979
 int start_loop_flag = 0;
-int start_speed = 1500;
+int start_speed = 1560;
 extern  PID  pid_speed;
 
 L1Controller::L1Controller()
@@ -57,7 +57,7 @@ L1Controller::L1Controller()
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odom", 1, &L1Controller::odomCB, this);
-    path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
+    path_sub = n_.subscribe("/local_planner_node/trajectory", 1, &L1Controller::pathCB, this);
     goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
     marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
     pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
@@ -125,7 +125,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
 
             if(!goal_reached)
             {
-                if(start_loop_flag++ <= 12)
+                if(start_loop_flag++ <= 10)
                 {
 
                     double u = getGasInput(carVel.linear.x);
@@ -134,7 +134,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
 
 
 
-                     start_speed += 3;
+                     start_speed += 4;
                      if(cmd_vel.linear.x > baseSpeed)   cmd_vel.linear.x = baseSpeed;
                      ROS_INFO("baseSpeed = %.2f\tSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
                 }
@@ -153,26 +153,26 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
     if(car_stop > 0)
     {
         start_loop_flag = 0;
-        // if(carVel.linear.x > 0)
-        // {
+        if(carVel.linear.x > 0)
+        {
 
-        //     cmd_vel.linear.x = 1300; //反向刹车
-        //     pub_.publish(cmd_vel);
-        //    // for(int i=0;i<20;i++)
-        //    // {
-        //    //     pub_.publish(cmd_vel);
-        //    //     sleep(0.1);
-        //    //     ROS_INFO("cat stop cmd_vel= %f",cmd_vel.linear.x);
-        //    // }
+            cmd_vel.linear.x = 1300; //反向刹车
+            pub_.publish(cmd_vel);
+           // for(int i=0;i<20;i++)
+           // {
+           //     pub_.publish(cmd_vel);
+           //     sleep(0.1);
+           //     ROS_INFO("cat stop cmd_vel= %f",cmd_vel.linear.x);
+           // }
             
-        // }
-        // else
+        }
+        else
         {
             car_stop = 0;
             cmd_vel.linear.x = 1500;
             pub_.publish(cmd_vel);
 
-            ROS_INFO("cmd_vel= %f",cmd_vel.linear.x);
+            //ROS_INFO("cmd_vel= %f",cmd_vel.linear.x);
         }
     }
     else

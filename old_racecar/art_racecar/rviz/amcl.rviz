@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Imu1/Box properties1
-        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 528
   - Class: rviz/Selection
@@ -28,8 +27,6 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan
-Toolbars:
-  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -86,7 +83,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1239
+      Max Intensity: 402
       Min Color: 0; 0; 0
       Min Intensity: 2
       Name: LaserScan
@@ -214,29 +211,6 @@ Visualization Manager:
       Unreliable: false
       Value: false
       fixed_frame_orientation: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 170; 0; 0
-      Enabled: true
-      Head Diameter: 0.300000012
-      Head Length: 0.200000003
-      Length: 0.300000012
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.100000001
-      Shaft Length: 0.100000001
-      Topic: /move_base/TebLocalPlannerROS/local_plan
-      Unreliable: false
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -262,7 +236,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 18.2613506
+      Distance: 17.7873268
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -280,7 +254,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.95039415
+      Yaw: 2.95539427
     Saved: ~
 Window Geometry:
   Displays:
@@ -298,5 +272,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1302
-  X: 298
-  Y: 63
+  X: 519
+  Y: 235

@@ -40,10 +40,10 @@
   <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen"> -->
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false">           
       <!-- L1 -->
-      <param name="Vcmd" value="2.4" /> <!-- speed of car m/s -->
+      <param name="Vcmd" value="1.9" /> <!-- speed of car m/s -->
       
       <!-- ESC -->
-      <param name="baseSpeed" value="1556"/> <!-- pwm for motor constant speed, 1500: stop -->
+      <param name="baseSpeed" value="1553"/> <!-- pwm for motor constant speed, 1500: stop -->
       <param name="startSpeed" value="1530"/> <!-- pwm for motor constant speed, 1500: stop -->
       <param name="controller_freq" value="35"/> 
         

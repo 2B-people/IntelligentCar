@@ -9,7 +9,7 @@
     <arg name="init_a" default="0.0" />
 
     <!-- Map server -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/mymap.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find art_racecar)/map/test.yaml"/>
 
    
 
@@ -56,18 +56,18 @@
         <!-- L1 -->
         <param name="Vcmd" value="1.5" /> <!-- speed of car m/s -->        
         <!-- ESC -->
-        <param name="baseSpeed" value="1545"/> <!-- pwm for motor constant speed, 1500: stop --> 
+        <param name="baseSpeed" value="1565"/> <!-- pwm for motor constant speed, 1500: stop --> 
  
 
         <!-- Servo -->
         <param name="baseAngle" value="90.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-        <param name="AngleGain" value="-3.5"/> <!-- for tt02: >0, for hsp: <0 -->	
-        <param name="GasGain" value="0.5"/>
+        <param name="AngleGain" value="-3.0"/> <!-- for tt02: >0, for hsp: <0 -->	
+        <param name="GasGain" value="1.0"/>
 
         <!-- remap from="/odometry/filtered" to="odom" / --> 
         <remap from="/move_base_node/NavfnROS/plan" to="/move_base/NavfnROS/plan" /> 
     </node>
 
     <!-- Rviz -->
-    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find art_racecar)/rviz/amcl.rviz" if="$(arg use_rviz)" /> -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find art_racecar)/rviz/amcl.rviz" if="$(arg use_rviz)" />
 </launch>
