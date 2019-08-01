@@ -41,11 +41,11 @@
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false">           
       <!-- L1 -->
       <param name="Vcmd" value="2.2" /> <!-- speed of car m/s -->
-      <param name="lfw" value="0.2" /> <!-- qianzhan -->  
-      <param name="Lfw" value="0.2" /> <!-- qianzhan -->  
+      
       <!-- ESC -->
-      <param name="baseSpeed" value="1556"/> <!-- pwm for motor constant speed, 1500: stop -->
-      <param name="controller_freq" value="40"/> 
+      <param name="baseSpeed" value="1555"/> <!-- pwm for motor constant speed, 1500: stop -->
+      <param name="startSpeed" value="1535"/> <!-- pwm for motor constant speed, 1500: stop -->
+      <param name="controller_freq" value="35"/> 
         
       <!-- Servo -->
       <param name="baseAngle" value="97.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->

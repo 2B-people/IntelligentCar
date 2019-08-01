@@ -1,6 +1,6 @@
 <launch>
   <master auto="start"/>
-  <arg name="speed" value="0.5"/>
+  <arg name="speed" value="0.8"/>
 
   <node pkg="rosbag" type="play" name="playe" output="screen" args="-r $(arg speed) /home/sz/.ros/test.bag"/>
 
