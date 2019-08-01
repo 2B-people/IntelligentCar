@@ -1,0 +1,8 @@
+<launch>
+  <!-- Run the rosbag -->
+  <node pkg="rosbag" type="record" name="bag_record" args="-O test.bag -a"></node>
+
+  <!-- Run the rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
+
+</launch>

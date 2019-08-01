@@ -145,9 +145,9 @@ MPCNode::MPCNode()
     _sub_amcl   = _nh.subscribe("/amcl_pose", 5, &MPCNode::amclCB, this);
     _pub_odompath  = _nh.advertise<nav_msgs::Path>("/mpc_reference", 1); // reference path for MPC 
     _pub_mpctraj   = _nh.advertise<nav_msgs::Path>("/mpc_trajectory", 1);// MPC trajectory output
-    _pub_ackermann = _nh.advertise<ackermann_msgs::AckermannDriveStamped>("/ackermann_cmd", 1);
+    // _pub_ackermann = _nh.advertise<ackermann_msgs::AckermannDriveStamped>("/ackermann_cmd", 1);
     if(_pub_twist_flag)
-        _pub_twist = _nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1); //for stage (Ackermann msg non-supported)
+        _pub_twist = _nh.advertise<geometry_msgs::Twist>("/car/cmd_vel", 1); //for stage (Ackermann msg non-supported)
     
     //Timer
     _timer1 = _nh.createTimer(ros::Duration((1.0)/_controller_freq), &MPCNode::controlLoopCB, this); // 10Hz
@@ -435,12 +435,12 @@ void MPCNode::controlLoopCB(const ros::TimerEvent&)
     }
 
     // publish cmd 
-    _ackermann_msg.header.frame_id = _car_frame;
-    _ackermann_msg.header.stamp = ros::Time::now();
-    _ackermann_msg.drive.steering_angle = _steering;
-    _ackermann_msg.drive.speed = _speed;
-    _ackermann_msg.drive.acceleration = _throttle;
-    _pub_ackermann.publish(_ackermann_msg);        
+    // _ackermann_msg.header.frame_id = _car_frame;
+    // _ackermann_msg.header.stamp = ros::Time::now();
+    // _ackermann_msg.drive.steering_angle = _steering;
+    // _ackermann_msg.drive.speed = _speed;
+    // _ackermann_msg.drive.acceleration = _throttle;
+    // _pub_ackermann.publish(_ackermann_msg);        
 
     if(_pub_twist_flag)
     {

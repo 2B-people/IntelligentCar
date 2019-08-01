@@ -21,9 +21,9 @@
   <arg name="init_a" default="0.0" />
   <!-- AMCL -->
   <include file="$(find art_racecar)/launch/includes/amcl.launch.xml">
-      <arg name="init_x" value="$(arg init_x)"/>
-      <arg name="init_y" value="$(arg init_y)"/>
-      <arg name="init_a" value="$(arg init_a)"/>
+    <arg name="init_x" value="$(arg init_x)"/>
+    <arg name="init_y" value="$(arg init_y)"/>
+    <arg name="init_a" value="$(arg init_a)"/>
   </include>
 
   <!-- Run the global planner node -->
@@ -36,33 +36,35 @@
 `
   <node pkg="roborts_decision" type="behavior_test_node" name="behavior_test_node" respawn="false" />
 
-    <!-- L1 controller -->  
+  <!-- L1 controller -->
   <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen"> -->
-  <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false">           
-      <!-- L1 -->
-      <param name="Vcmd" value="1.9" /> <!-- speed of car m/s -->
-      
-      <!-- ESC -->
-      <param name="baseSpeed" value="1553"/> <!-- pwm for motor constant speed, 1500: stop -->
-      <param name="startSpeed" value="1530"/> <!-- pwm for motor constant speed, 1500: stop -->
-      <param name="controller_freq" value="35"/> 
-        
-      <!-- Servo -->
-      <param name="baseAngle" value="97.0"/> <!-- the middle pos of servo, for tt02: 87, for hsp: ? -->
-      <param name="AngleGain" value="-4.4"/> <!-- for tt02: >0, for hsp: <0 -->	
-      <param name="GasGain" value="0.7"/> <!-- for tt02: >0, for hsp: <0 -->	
-      <!-- Toplic -->
-      <remap from="/odom" to="/odometry/filtered"/>
-      <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory" /> 
-      <!-- <remap from="/move_base_node/NavfnROS/plan" to="/global_planner_node/path"/> -->
+  <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false">
+    <!-- L1 -->
+    <param name="Vcmd" value="1.9" />
+    <param name="controller_freq" value="35"/>
+
+    <!-- ESC -->
+    <!-- speed of car m/s -->
+    <param name="baseSpeed" value="1553"/>
+    <!-- speed when car start -->
+    <param name="startSpeed" value="1530"/>
+
+    <!-- Servo -->
+    <param name="baseAngle" value="97.0"/>
+    <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
+    <param name="AngleGain" value="-4.4"/>
+    <!-- for tt02: >0, for hsp: <0 -->
+    <param name="GasGain" value="0.7"/>
+    <!-- for tt02: >0, for hsp: <0 -->
+
+    <!-- Topic -->
+    <!-- odom from ekf -->
+    <remap from="/odom" to="/odometry/filtered"/>
+    <!-- plan form local_plan -->
+    <remap from="/move_base_node/NavfnROS/plan" to="/local_planner_node/trajectory" />
+    <!-- plan form global_plan -->
+    <!-- <remap from="/move_base_node/NavfnROS/plan" to="/global_planner_node/path"/> -->
   </node>
-
-
-  <!-- Run the rosbag -->
-  <node pkg="rosbag" type="record" name="bag_record" args="-O aaaa.bag -a"></node>
-
-  <!-- Run the rviz -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find roborts_bringup)/rviz/roborts.rviz" />
 
 </launch>
 
