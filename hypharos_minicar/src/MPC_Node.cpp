@@ -287,7 +287,7 @@ void MPCNode::pathCB(const nav_msgs::Path::ConstPtr& pathMsg)
         catch(tf::TransformException &ex)
         {
             ROS_ERROR("%s",ex.what());
-            ros::Duration(1.0).sleep();
+            ros::Duration(0.05).sleep();
         }
     }
 }
