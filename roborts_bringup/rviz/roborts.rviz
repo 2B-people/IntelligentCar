@@ -33,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
   - Class: rviz/Tool Properties
     Expanded: ~
     Name: Tool Properties
@@ -86,8 +86,6 @@ Visualization Manager:
           Value: true
         laser:
           Value: true
-        map:
-          Value: true
         odom:
           Value: true
       Marker Scale: 1
@@ -96,14 +94,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_footprint:
-              base_link:
-                IMU_link:
-                  {}
-                laser:
-                  {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988
