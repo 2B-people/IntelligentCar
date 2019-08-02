@@ -10,7 +10,7 @@ max_speed: 1.5 # unit: m/s
 waypoints_dist: -1.0 # unit: m, set < 0 means computed by node
 path_length: 3.0 # unit: m
 goal_radius: 0.2 # unit: m
-controller_freq: 10
+controller_freq: 30
 vehicle_Lf: 0.0723 # distance between the front of the vehicle and its center of gravity
 
 # Parameter for MPC solver
