@@ -45,7 +45,7 @@
 
     <!-- ESC -->
     <!-- speed of car m/s -->
-    <param name="baseSpeed" value="5200"/>
+    <param name="baseSpeed" value="5220"/>
     <!-- speed when car start -->
     <param name="startSpeed" value="5100"/>
 

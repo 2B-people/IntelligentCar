@@ -95,7 +95,7 @@ L1Controller::L1Controller()
 
     //nqq do
     pn.param("startSpeed", start_speed_, 5100.0);
-    pn.param("startLoop", start_loop_, 200);
+    pn.param("startLoop", start_loop_, 50);
     loop_ = 0;
 
     //Publishers and Subscribers
@@ -375,6 +375,8 @@ void L1Controller::goalReachingCB(const ros::TimerEvent&)
         {
             goal_reached = true;
             goal_received = false;
+            loop_ = 0;
+            start_speed_ = 5100;
             ROS_INFO("Goal Reached !");
         }
     }
@@ -425,17 +427,15 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
                         get_eta = -get_eta;
                     }
                     
-                    if(get_eta >= 10.0 && get_eta <= 40.0)
+                    if(get_eta >= 20.0 && get_eta <= 40.0)
                     {
-                        cmd_vel.linear.x = (int)(baseSpeed-get_eta*0.7); 
+                        cmd_vel.linear.x = 5180; 
+                        Lfw = goalRadius = getL1Distance(1.5);
                     }
                     else if(get_eta > 40.0)
                     {
-                        cmd_vel.linear.x = (int)(baseSpeed-get_eta*1.4);
-                        if( cmd_vel.linear.x< 5130) 
-                        {
-                            cmd_vel.linear.x = 5130;
-                        }
+                        cmd_vel.linear.x = 5155;
+                        Lfw = goalRadius = getL1Distance(1.3);
                     }
                     else
                     {
