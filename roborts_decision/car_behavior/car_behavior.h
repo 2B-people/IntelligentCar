@@ -40,20 +40,12 @@ public:
     auto robot_map_pose = blackboard_->GetRobotMapPose();
     if (executor_state != BehaviorState::RUNNING)
     {
-      while (ros::ok)
+      if (cancel_goal_)
       {
-        ros::spinOnce();
-        if (cancel_goal_)
-        {
-          chase_goal_.header.stamp = ros::Time::now();
-          chassis_executor_->Execute(chase_goal_);
-          cancel_goal_ = false;
-          return;
-        }
-        else
-        {
-          continue;
-        }
+        chase_goal_.header.stamp = ros::Time::now();
+        chassis_executor_->Execute(chase_goal_);
+        cancel_goal_ = false;
+        return;
       }
     }
   }

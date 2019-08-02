@@ -408,18 +408,19 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
                     }
                     else
                     {
-                        double u = getGasInput(carVel.linear.x);
-                        cmd_vel.linear.x = baseSpeed - u;
+                        // double u = getGasInput(carVel.linear.x);
+                        // cmd_vel.linear.x = baseSpeed - u;
+                        cmd_vel.linear.x = baseSpeed; 
                     }
                     ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);                    
                 }
                 else
                 {
-                    double u = getGasInput(carVel.linear.x);
-                    cmd_vel.linear.x = baseSpeed - u;
+                    // double u = getGasInput(carVel.linear.x);
+                    // cmd_vel.linear.x = baseSpeed - u;
+                    cmd_vel.linear.x = baseSpeed; 
                     ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
                 }
-                
             }
         }
     }
