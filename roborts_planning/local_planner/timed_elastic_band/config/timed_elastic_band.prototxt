@@ -55,7 +55,7 @@ robot_type {
     robot_vertices {
         x: 0.175
         y: 0.225
-    }
+    }k
     robot_vertices {
         x: -0.175
         y: 0.225
