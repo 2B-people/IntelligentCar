@@ -90,11 +90,11 @@ L1Controller::L1Controller()
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
     pn.param("GasGain", Gas_gain, 1.0);
-    pn.param("baseSpeed", baseSpeed, 1550);
+    pn.param("baseSpeed", baseSpeed, 5100);
     pn.param("baseAngle", baseAngle, 90.0);
 
     //nqq do
-    pn.param("startSpeed", start_speed_, 1510.0);
+    pn.param("startSpeed", start_speed_, 5100.0);
     pn.param("startLoop", start_loop_, 200);
     loop_ = 0;
 
@@ -114,7 +114,7 @@ L1Controller::L1Controller()
     foundForwardPt = false;
     goal_received = false;
     goal_reached = false;
-    cmd_vel.linear.x = 1500; // 1500 for stop
+    cmd_vel.linear.x = 5000; // 1500 for stop
     cmd_vel.angular.z = baseAngle;
 
     //Show info
@@ -189,7 +189,7 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goalMsg)
         geometry_msgs::PoseStamped odom_goal;
         tf_listener.transformPose("odom", ros::Time(0) , *goalMsg, "map" ,odom_goal);
         odom_goal_pos = odom_goal.pose.position;
-        for(int i = 0;i<6;i++)
+        for(int i = 0;i<3;i++)
         {
             ros::Duration(1.0).sleep();
         }
@@ -385,7 +385,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
 
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
-    cmd_vel.linear.x = 1500;
+    cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
     if(goal_received)
@@ -394,7 +394,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
         double eta = getEta(carPose);          
         if(foundForwardPt)
         {   
-            cmd_vel.angular.z = baseAngle + getSteeringAngle(eta)*Angle_gain;
+            double get_eta = getSteeringAngle(eta)*Angle_gain;
+            ROS_INFO("\n get_eta is %.2f\n*********\n",get_eta);
+            cmd_vel.angular.z = baseAngle + get_eta;
             /*Estimate Gas Input*/
             if(!goal_reached)
             {
@@ -403,7 +405,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
                     loop_++;
                     if(start_speed_< baseSpeed)
                     {
-                        start_speed_ = start_speed_ + 0.45;
+                        start_speed_ = start_speed_ + 1.5;
                         cmd_vel.linear.x = (int)start_speed_;
                     }
                     else
@@ -418,7 +420,27 @@ void L1Controller::controlLoopCB(const ros::TimerEvent&)
                 {
                     // double u = getGasInput(carVel.linear.x);
                     // cmd_vel.linear.x = baseSpeed - u;
-                    cmd_vel.linear.x = baseSpeed; 
+                    if(get_eta< 0.0)
+                    {
+                        get_eta = -get_eta;
+                    }
+                    
+                    if(get_eta >= 10.0 && get_eta <= 40.0)
+                    {
+                        cmd_vel.linear.x = (int)(baseSpeed-get_eta*0.7); 
+                    }
+                    else if(get_eta > 40.0)
+                    {
+                        cmd_vel.linear.x = (int)(baseSpeed-get_eta*1.4);
+                        if( cmd_vel.linear.x< 5130) 
+                        {
+                            cmd_vel.linear.x = 5130;
+                        }
+                    }
+                    else
+                    {
+                        cmd_vel.linear.x = (int)baseSpeed; 
+                    }
                     ROS_INFO("\nGas = %.2f\nSteering angle = %.2f",cmd_vel.linear.x,cmd_vel.angular.z);
                 }
             }
