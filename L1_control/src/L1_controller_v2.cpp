@@ -453,9 +453,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     }
                     if (get_eta >= 10.0 && get_eta <= 20.0)
                     { 
-                        if(now_speed_ <= 5180) 
+                        if(now_speed_ <= 5190) 
                         {
-                            now_speed_ = 5180;
+                            now_speed_ = 5190;
                         }  
                         else
                         {
@@ -465,9 +465,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     }
                     if (get_eta >= 20.0 && get_eta <= 30.0)
                     { 
-                        if(now_speed_ <= 5170) 
+                        if(now_speed_ <= 5190) 
                         {
-                            now_speed_ = 5170;
+                            now_speed_ = 5190;
                         }  
                         else
                         {
@@ -477,9 +477,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     }
                     else if (get_eta >= 30.0 && get_eta <= 40.0)
                     { 
-                        if(now_speed_ <= 5160) 
+                        if(now_speed_ <= 5170) 
                         {
-                            now_speed_ = 5160;
+                            now_speed_ = 5170;
                         }  
                         else
                         {
@@ -489,9 +489,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     }
                     else if (get_eta > 40.0)
                     {
-                        if(now_speed_ <= 5145)
+                        if(now_speed_ <= 5160)
                         {
-                            now_speed_ = 5145;
+                            now_speed_ = 5160;
                         }   
                         else
                         {
