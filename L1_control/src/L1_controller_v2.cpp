@@ -488,9 +488,11 @@ int main(int argc, char **argv)
         {
         case '1':
             controller.GoCar();
+            command = '0';
             break;
         case '2':
             controller.ReStart();
+            command = '0';
             break;
         case 27:
             if (command_thread.joinable())
@@ -501,6 +503,7 @@ int main(int argc, char **argv)
         default:
             break;
         }
+        ros::spinOnce();
     }
 
     return 0;
@@ -512,9 +515,9 @@ void Command()
     {
         std::cout << "**************************************" << std::endl;
         std::cout << "*********please send a command********" << std::endl;
-        std::cout << "> ";
-        std::cout << "1: GO";
-        std::cout << "2: ReStart";
+        std::cout << "> "<< std::endl;
+        std::cout << "1: GO"<< std::endl;
+        std::cout << "2: ReStart"<< std::endl;
         std::cout << "esc: exit program" << std::endl;
         std::cout << "**************************************" << std::endl;
 
