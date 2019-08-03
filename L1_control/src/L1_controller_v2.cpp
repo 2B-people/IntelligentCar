@@ -368,7 +368,7 @@ double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.2;
+        L1 = 3 / 3.5;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
         L1 = _Vcmd * 2.24 / 3.0;
     else
@@ -451,8 +451,19 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     {
                         get_eta = -get_eta;
                     }
-
-                    if (get_eta >= 20.0 && get_eta <= 40.0)
+                    if (get_eta >= 10.0 && get_eta <= 20.0)
+                    { 
+                        if(now_speed_ <= 5180) 
+                        {
+                            now_speed_ = 5180;
+                        }  
+                        else
+                        {
+                            now_speed_ = now_speed_ - 4;
+                        }                    
+                        Lfw = goalRadius = getL1Distance(1.45);
+                    }
+                    if (get_eta >= 20.0 && get_eta <= 30.0)
                     { 
                         if(now_speed_ <= 5170) 
                         {
@@ -460,19 +471,31 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                         }  
                         else
                         {
-                            now_speed_ = now_speed_ - 5;
+                            now_speed_ = now_speed_ - 6;
+                        }                    
+                        Lfw = goalRadius = getL1Distance(1.4);
+                    }
+                    else if (get_eta >= 30.0 && get_eta <= 40.0)
+                    { 
+                        if(now_speed_ <= 5160) 
+                        {
+                            now_speed_ = 5160;
+                        }  
+                        else
+                        {
+                            now_speed_ = now_speed_ - 8;
                         }                    
                         Lfw = goalRadius = getL1Distance(1.35);
                     }
                     else if (get_eta > 40.0)
                     {
-                        if(now_speed_ <= 5150)
+                        if(now_speed_ <= 5145)
                         {
-                            now_speed_ = 5150;
+                            now_speed_ = 5145;
                         }   
                         else
                         {
-                            now_speed_ = now_speed_ - 5;
+                            now_speed_ = now_speed_ - 15;
                         }            
                         Lfw = goalRadius = getL1Distance(1.2);
                     }
@@ -484,7 +507,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                         }  
                         else
                         {
-                            now_speed_ = now_speed_ + 5;
+                            now_speed_ = now_speed_ + 6;
                         }          
                         Lfw = goalRadius = getL1Distance(Vcmd);
                     }

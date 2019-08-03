@@ -40,21 +40,19 @@
   <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen"> -->
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">
     <!-- L1 -->
-    <param name="Vcmd" value="1.5" />
-    <param name="controller_freq" value="40"/>
+    <param name="Vcmd" value="1.6" />
+    <param name="controller_freq" value="45"/>
 
     <!-- ESC -->
     <!-- speed of car m/s -->
-    <param name="baseSpeed" value="5210"/>
+    <param name="baseSpeed" value="5215"/>
     <!-- speed when car start -->
     <param name="startSpeed" value="5100"/>
 
     <!-- Servo -->
-    <param name="baseAngle" value="85.0"/>
+    <param name="baseAngle" value="86.0"/>
     <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
-    <param name="AngleGain" value="-3.0"/>
-    <!-- for tt02: >0, for hsp: <0 -->
-    <param name="GasGain" value="0.7"/>
+    <param name="AngleGain" value="-3.2"/>
     <!-- for tt02: >0, for hsp: <0 -->
 
     <!-- Topic -->
