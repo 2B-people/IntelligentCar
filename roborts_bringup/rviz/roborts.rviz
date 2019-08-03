@@ -7,6 +7,8 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
+        - /Map1
+        - /Odometry1
         - /Odometry1/Shape1
         - /Odometry1/Covariance1
       Splitter Ratio: 0.5
@@ -186,7 +188,7 @@ Visualization Manager:
           Value: true
         Value: false
       Enabled: true
-      Keep: 10
+      Keep: 5
       Name: Odometry
       Position Tolerance: 0.100000001
       Shape:
@@ -235,7 +237,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 19.484375
+      Distance: 18.4536743
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
