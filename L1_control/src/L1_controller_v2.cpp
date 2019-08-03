@@ -66,6 +66,7 @@ private:
     double L, Lfw, Lrv, Vcmd, lfw, lrv, steering, u, v;
     double Gas_gain, baseAngle, Angle_gain, goalRadius;
     int controller_freq, baseSpeed;
+    int now_speed_;
     int start_loop_, loop_;
     double start_speed_;
     bool foundForwardPt, goal_received, goal_reached;
@@ -120,6 +121,7 @@ L1Controller::L1Controller()
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
     cmd_vel.linear.x = 5000; // 5000 for stop
+    now_speed_ = 5000;
     cmd_vel.angular.z = baseAngle;
 
     foundForwardPt = false;
@@ -141,6 +143,7 @@ L1Controller::L1Controller()
 void L1Controller::ReStart()
 {
     start_speed_ = 5100;
+    now_speed_ = 5000;
     loop_ = 0;
 
     goal_reached = true;
@@ -365,7 +368,7 @@ double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.0;
+        L1 = 3 / 3.2;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
         L1 = _Vcmd * 2.24 / 3.0;
     else
@@ -421,47 +424,74 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
-                if (loop_ <= start_loop_)
+                if (loop_ < start_loop_)
                 {
                     loop_++;
                     if (start_speed_ < baseSpeed)
                     {
-                        start_speed_ = start_speed_ + 1.5;
-                        cmd_vel.linear.x = (int)start_speed_;
+                        start_speed_ = start_speed_ + 2;
+                        now_speed_ = (int)start_speed_;
+                        cmd_vel.linear.x = now_speed_;
                     }
                     else
                     {
                         // double u = getGasInput(carVel.linear.x);
                         // cmd_vel.linear.x = baseSpeed - u;
-                        cmd_vel.linear.x = baseSpeed;
+                        loop_ = start_loop_;
+                        cmd_vel.linear.x = now_speed_;
                     }
-                    ROS_INFO("\nGas = %.2f\nSteering angle = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
                 }
                 else
                 {
                     // double u = getGasInput(carVel.linear.x);
                     // cmd_vel.linear.x = baseSpeed - u;
+                    
+                    //abs get_eta;
                     if (get_eta < 0.0)
                     {
                         get_eta = -get_eta;
                     }
 
                     if (get_eta >= 20.0 && get_eta <= 40.0)
-                    {
-                        cmd_vel.linear.x = 5180;
-                        Lfw = goalRadius = getL1Distance(1.4);
+                    { 
+                        if(now_speed_ <= 5170) 
+                        {
+                            now_speed_ = 5170;
+                        }  
+                        else
+                        {
+                            now_speed_ = now_speed_ - 5;
+                        }                    
+                        Lfw = goalRadius = getL1Distance(1.35);
                     }
                     else if (get_eta > 40.0)
                     {
-                        cmd_vel.linear.x = 5155;
-                        Lfw = goalRadius = getL1Distance(1.3);
+                        if(now_speed_ <= 5150)
+                        {
+                            now_speed_ = 5150;
+                        }   
+                        else
+                        {
+                            now_speed_ = now_speed_ - 5;
+                        }            
+                        Lfw = goalRadius = getL1Distance(1.2);
                     }
                     else
                     {
-                        cmd_vel.linear.x = (int)baseSpeed;
+                        if(now_speed_ >= baseSpeed)
+                        {
+                            now_speed_ = baseSpeed;
+                        }  
+                        else
+                        {
+                            now_speed_ = now_speed_ + 5;
+                        }          
+                        Lfw = goalRadius = getL1Distance(Vcmd);
                     }
-                    ROS_INFO("\nGas = %.2f\nSteering angle = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
+                    
+                    cmd_vel.linear.x = now_speed_; 
                 }
+                ROS_INFO("\nGas = %.2f\nSteering angle = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
             }
         }
     }
