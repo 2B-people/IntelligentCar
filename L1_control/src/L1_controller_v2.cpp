@@ -43,16 +43,18 @@ public:
     double getYawFromPose(const geometry_msgs::Pose &carPose);
     double getEta(const geometry_msgs::Pose &carPose);
     double getCar2GoalDist();
+    double getCar2UDist();
     double getL1Distance(const double &_Vcmd);
     double getSteeringAngle(double eta);
     double getGasInput(const float &current_v);
     void ReStart();
     void GoCar();
+    void SetValue(const int key);
     geometry_msgs::Point get_odom_car2WayPtVec(const geometry_msgs::Pose &carPose);
 
 private:
     ros::NodeHandle n_;
-    ros::Subscriber odom_sub, path_sub, goal_sub;
+    ros::Subscriber odom_sub, path_sub, goal_sub,point_sub;
     ros::Publisher pub_, marker_pub;
     ros::Timer timer1, timer2;
     tf::TransformListener tf_listener;
@@ -60,12 +62,14 @@ private:
     visualization_msgs::Marker points, line_strip, goal_circle;
     geometry_msgs::Twist cmd_vel;
     geometry_msgs::Point odom_goal_pos;
+    geometry_msgs::Point u_odom_pos_;
     nav_msgs::Odometry odom;
     nav_msgs::Path map_path, odom_path;
 
     double L, Lfw, Lrv, Vcmd, lfw, lrv, steering, u, v;
     double Gas_gain, baseAngle, Angle_gain, goalRadius;
-    int controller_freq, baseSpeed;
+    double u_radius_;
+    int controller_freq, max_speed_;
     int now_speed_;
     int start_loop_, loop_;
     double start_speed_;
@@ -75,6 +79,7 @@ private:
     void odomCB(const nav_msgs::Odometry::ConstPtr &odomMsg);
     void pathCB(const nav_msgs::Path::ConstPtr &pathMsg);
     void goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg);
+    void pointCB(const geometry_msgs::PoseStamped::ConstPtr &pointMsg);
     void goalReachingCB(const ros::TimerEvent &);
     void controlLoopCB(const ros::TimerEvent &);
 
@@ -98,30 +103,18 @@ L1Controller::L1Controller()
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
-    pn.param("baseSpeed", baseSpeed, 5100);
+    pn.param("MaxSpeed", max_speed_, 5100);
     pn.param("baseAngle", baseAngle, 90.0);
 
     //start
     pn.param("startSpeed", start_speed_, 5100.0);
     pn.param("startLoop", start_loop_, 60);
     loop_ = 0;
-
-    //Publishers and Subscribers
-    odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
-    path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
-    goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
-
-    marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
-    pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
-
-    //Timer
-    timer1 = n_.createTimer(ros::Duration((1.0) / controller_freq), &L1Controller::controlLoopCB, this);  // Duration(0.05) -> 20Hz
-    timer2 = n_.createTimer(ros::Duration((0.5) / controller_freq), &L1Controller::goalReachingCB, this); // Duration(0.05) -> 20Hz
-
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
-    cmd_vel.linear.x = 5000; // 5000 for stop
+    u_radius_ = 1.0;
     now_speed_ = 5000;
+    cmd_vel.linear.x = 5000; // 5000 for stop
     cmd_vel.angular.z = baseAngle;
 
     foundForwardPt = false;
@@ -129,12 +122,18 @@ L1Controller::L1Controller()
     goal_reached = false;
     go_ = false;
 
-    //Show info
-    ROS_INFO("[param] baseSpeed: %d", baseSpeed);
-    ROS_INFO("[param] baseAngle: %f", baseAngle);
-    ROS_INFO("[param] AngleGain: %f", Angle_gain);
-    ROS_INFO("[param] Vcmd: %f", Vcmd);
-    ROS_INFO("[param] Lfw: %f", Lfw);
+    //Publishers and Subscribers
+    odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
+    path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
+    goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
+    point_sub = n_.subscribe("/clicked_point", 1, &L1Controller::pointCB, this);
+    
+    marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
+    pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
+
+    //Timer
+    timer1 = n_.createTimer(ros::Duration((1.0) / controller_freq), &L1Controller::controlLoopCB, this);  // Duration(0.05) -> 20Hz
+    timer2 = n_.createTimer(ros::Duration((0.5) / controller_freq), &L1Controller::goalReachingCB, this); // Duration(0.05) -> 20Hz
 
     //Visualization Marker Settings
     initMarker();
@@ -144,14 +143,15 @@ void L1Controller::ReStart()
 {
     start_speed_ = 5100;
     now_speed_ = 5000;
+    cmd_vel.linear.x = 5000; // 1500 for stop
+    cmd_vel.angular.z = baseAngle;
+
     loop_ = 0;
 
     goal_reached = true;
     goal_received = false;
     go_ = false;
 
-    cmd_vel.linear.x = 5000; // 1500 for stop
-    cmd_vel.angular.z = baseAngle;
     Lfw = goalRadius = getL1Distance(Vcmd);
 
     ROS_WARN("L1_controller is restart!");
@@ -219,9 +219,6 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg)
         tf_listener.transformPose("odom", ros::Time(0), *goalMsg, "map", odom_goal);
         odom_goal_pos = odom_goal.pose.position;
 
-        // Start
-        // ros::Duration(2.0).sleep();
-
         goal_received = true;
         goal_reached = false;
 
@@ -235,6 +232,26 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg)
         ros::Duration(1.0).sleep();
     }
 }
+
+void L1Controller::pointCB(const geometry_msgs::PoseStamped::ConstPtr &pointMsg)
+{
+    try
+    {
+        geometry_msgs::PoseStamped odom_point;
+        tf_listener.transformPose("odom", ros::Time(0), *pointMsg, "map", odom_point);
+        u_odom_pos_ = odom_point.pose.position;
+
+        /*Draw Goal on RVIZ*/
+        goal_circle.pose = odom_point.pose;
+        marker_pub.publish(goal_circle);
+    }
+    catch (tf::TransformException &ex)
+    {
+        ROS_ERROR("%s", ex.what());
+        ros::Duration(1.0).sleep();
+    }   
+}
+
 
 double L1Controller::getYawFromPose(const geometry_msgs::Pose &carPose)
 {
@@ -364,6 +381,17 @@ double L1Controller::getCar2GoalDist()
     return dist2goal;
 }
 
+double L1Controller::getCar2UDist()
+{
+    geometry_msgs::Point car_pose = odom.pose.pose.position;
+    double car2U_x = u_odom_pos_.x - car_pose.x;
+    double car2U_y = u_odom_pos_.y - car_pose.y;
+
+    double dist2U = sqrt(car2U_x * car2U_x + car2U_y * car2U_y);
+
+    return dist2U;   
+}
+
 double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
@@ -396,6 +424,12 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
     if (goal_received)
     {
         double car2goal_dist = getCar2GoalDist();
+        double car2U_dist = getCar2UDist();
+        if(car2U_dist < u_radius_)
+        {
+            ROS_INFO("U Reached !");
+
+        }
         if (car2goal_dist < goalRadius)
         {
             ReStart();
@@ -409,6 +443,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
+    Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
@@ -416,106 +451,99 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
     {
         /*Estimate Steering Angle*/
         double eta = getEta(carPose);
+
         if (foundForwardPt)
         {
-            double get_eta = getSteeringAngle(eta) * Angle_gain;
-            ROS_INFO("\n get_eta is %.2f\n*********\n", get_eta);
-            cmd_vel.angular.z = baseAngle + get_eta;
+            double steering_angle = getSteeringAngle(eta)* Angle_gain;
+            cmd_vel.angular.z = baseAngle + steering_angle;
+
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
-                if (loop_ < start_loop_)
+                if (loop_++ < start_loop_)
                 {
-                    loop_++;
-                    if (start_speed_ < baseSpeed)
+                    if (start_speed_ < max_speed_)
                     {
                         start_speed_ = start_speed_ + 2;
-                        now_speed_ = (int)start_speed_;
-                        cmd_vel.linear.x = now_speed_;
+                        now_speed_ = start_speed_;
                     }
                     else
                     {
-                        // double u = getGasInput(carVel.linear.x);
-                        // cmd_vel.linear.x = baseSpeed - u;
                         loop_ = start_loop_;
-                        cmd_vel.linear.x = now_speed_;
                     }
                 }
                 else
                 {
                     // double u = getGasInput(carVel.linear.x);
-                    // cmd_vel.linear.x = baseSpeed - u;
-                    
-                    //abs get_eta;
-                    if (get_eta < 0.0)
+                    // cmd_vel.linear.x = max_speed_ - u;
+
+                    //abs steering_angle;
+                    if (steering_angle < 0.0)
                     {
-                        get_eta = -get_eta;
+                        steering_angle = -steering_angle;
                     }
-                    if (get_eta >= 10.0 && get_eta <= 20.0)
-                    { 
-                        if(now_speed_ <= 5190) 
+                    if (steering_angle >= 10.0 && steering_angle <= 20.0)
+                    {
+                        if (now_speed_ <= 5190)
                         {
                             now_speed_ = 5190;
-                        }  
+                        }
                         else
                         {
                             now_speed_ = now_speed_ - 4;
-                        }                    
-                        Lfw = goalRadius = getL1Distance(1.45);
+                        }
                     }
-                    if (get_eta >= 20.0 && get_eta <= 30.0)
-                    { 
-                        if(now_speed_ <= 5190) 
+                    if (steering_angle >= 20.0 && steering_angle <= 30.0)
+                    {
+                        if (now_speed_ <= 5190)
                         {
                             now_speed_ = 5190;
-                        }  
+                        }
                         else
                         {
                             now_speed_ = now_speed_ - 6;
-                        }                    
-                        Lfw = goalRadius = getL1Distance(1.4);
+                        }
                     }
-                    else if (get_eta >= 30.0 && get_eta <= 40.0)
-                    { 
-                        if(now_speed_ <= 5170) 
+                    else if (steering_angle >= 30.0 && steering_angle <= 40.0)
+                    {
+                        if (now_speed_ <= 5170)
                         {
                             now_speed_ = 5170;
-                        }  
+                        }
                         else
                         {
                             now_speed_ = now_speed_ - 8;
-                        }                    
-                        Lfw = goalRadius = getL1Distance(1.35);
+                        }
                     }
-                    else if (get_eta > 40.0)
+                    else if (steering_angle > 40.0)
                     {
-                        if(now_speed_ <= 5160)
+                        if (now_speed_ <= 5160)
                         {
                             now_speed_ = 5160;
-                        }   
+                        }
                         else
                         {
                             now_speed_ = now_speed_ - 15;
-                        }            
-                        Lfw = goalRadius = getL1Distance(1.2);
+                        }
                     }
                     else
                     {
-                        if(now_speed_ >= baseSpeed)
+                        if (now_speed_ >= max_speed_)
                         {
-                            now_speed_ = baseSpeed;
-                        }  
+                            now_speed_ = max_speed_;
+                        }
                         else
                         {
                             now_speed_ = now_speed_ + 6;
-                        }          
+                        }
                         Lfw = goalRadius = getL1Distance(Vcmd);
                     }
-                    
-                    cmd_vel.linear.x = now_speed_; 
                 }
-                ROS_INFO("\nGas = %.2f\nSteering angle = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
             }
+            cmd_vel.linear.x = now_speed_;
+
+            ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n "
+                    ,cmd_vel.linear.x, cmd_vel.angular.z,steering_angle);
         }
     }
     pub_.publish(cmd_vel);
@@ -547,6 +575,10 @@ int main(int argc, char **argv)
             controller.ReStart();
             command = '0';
             break;
+        case '3':
+            //TODO
+            command = '0';
+            break;
         case 27:
             if (command_thread.joinable())
             {
@@ -568,9 +600,10 @@ void Command()
     {
         std::cout << "**************************************" << std::endl;
         std::cout << "*********please send a command********" << std::endl;
-        std::cout << "> "<< std::endl;
-        std::cout << "1: GO"<< std::endl;
-        std::cout << "2: ReStart"<< std::endl;
+        std::cout << "> " << std::endl;
+        std::cout << "1: GO" << std::endl;
+        std::cout << "2: ReStart" << std::endl;
+        std::cout << "3: Set [Param]" << std::endl;
         std::cout << "esc: exit program" << std::endl;
         std::cout << "**************************************" << std::endl;
 
