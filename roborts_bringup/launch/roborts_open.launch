@@ -1,6 +1,6 @@
 <launch>
   <master auto="start"/>
-  <arg name="map" value="yusai_map"/>
+  <arg name="map" value="214_8_1"/>
 
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
 
