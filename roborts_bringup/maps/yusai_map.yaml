@@ -1,11 +1,6 @@
 image: yusai_map.pgm
-<<<<<<< HEAD
 resolution:  0.06
 origin: [-0, -0, 0.000000]
-=======
-resolution:  0.0360000
-origin: [0, 0, 0.000000]
->>>>>>> 0e995580e2e48cd0f5b72077df9de3b14acf2857
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196
