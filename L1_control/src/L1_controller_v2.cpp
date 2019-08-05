@@ -21,6 +21,7 @@ along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 #include "ros/ros.h"
 
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
@@ -82,7 +83,7 @@ private:
     void odomCB(const nav_msgs::Odometry::ConstPtr &odomMsg);
     void pathCB(const nav_msgs::Path::ConstPtr &pathMsg);
     void goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg);
-    void pointCB(const geometry_msgs::PoseStamped::ConstPtr &pointMsg);
+    void pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg);
     void goalReachingCB(const ros::TimerEvent &);
     void controlLoopCB(const ros::TimerEvent &);
 
@@ -109,7 +110,7 @@ L1Controller::L1Controller()
     pn.param("MaxSpeed", max_speed_, 5200);
     pn.param("baseAngle", baseAngle, 90.0);
 
-    pn.param("pace_gain_u", pace_gain_u_, -5);
+    pn.param("pace_gain_u", pace_gain_u_, -4);
     pn.param("pace_gain_1_", pace_gain_1_, -5);
     pn.param("pace_gain_2_", pace_gain_2_, -6);
     pn.param("pace_gain_3_", pace_gain_3_, -8);
@@ -120,8 +121,8 @@ L1Controller::L1Controller()
     pn.param("min_speed_1_", min_speed_1_, 5190);
     pn.param("min_speed_2_", min_speed_2_, 5180);
     pn.param("min_speed_3_", min_speed_3_, 5170);
-    pn.param("min_speed_4_", min_speed_4_, 5160);
-    pn.param("min_speed_u_", min_speed_u_, 5155);
+    pn.param("min_speed_4_", min_speed_4_, 5165);
+    pn.param("min_speed_u_", min_speed_u_, 5160);
 
     //start
     pn.param("startSpeed", start_speed_, 5100.0);
@@ -129,7 +130,7 @@ L1Controller::L1Controller()
     loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
-    u_radius_ = 1.0;
+    u_radius_ = 2.5;
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 5000 for stop
     cmd_vel.angular.z = baseAngle;
@@ -241,8 +242,8 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg)
         goal_reached = false;
 
         /*Draw Goal on RVIZ*/
-        goal_circle.pose = odom_goal.pose;
-        marker_pub.publish(goal_circle);
+        // goal_circle.pose = odom_goal.pose;
+        // marker_pub.publish(goal_circle);
     }
     catch (tf::TransformException &ex)
     {
@@ -251,16 +252,18 @@ void L1Controller::goalCB(const geometry_msgs::PoseStamped::ConstPtr &goalMsg)
     }
 }
 
-void L1Controller::pointCB(const geometry_msgs::PoseStamped::ConstPtr &pointMsg)
+void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg)
 {
     try
     {
-        geometry_msgs::PoseStamped odom_point;
-        tf_listener.transformPose("odom", ros::Time(0), *pointMsg, "map", odom_point);
-        u_odom_pos_ = odom_point.pose.position;
+        ROS_WARN("IN HARE");
+        geometry_msgs::PointStamped odom_point;
+        tf_listener.transformPoint("odom", *pointMsg, odom_point);
+        u_odom_pos_ = odom_point.point;
 
+        ROS_INFO("u_odom_pos_.x: %0.2f u_odom_pos_.y: %0.2f",u_odom_pos_.x ,u_odom_pos_.y);
         /*Draw Goal on RVIZ*/
-        goal_circle.pose = odom_point.pose;
+        goal_circle.pose.position = u_odom_pos_;
         marker_pub.publish(goal_circle);
     }
     catch (tf::TransformException &ex)
@@ -401,6 +404,7 @@ double L1Controller::getCar2GoalDist()
 double L1Controller::getCar2UDist()
 {
     geometry_msgs::Point car_pose = odom.pose.pose.position;
+    ROS_INFO("car_pose x:%.2f y:%.2f ",car_pose.x,car_pose.y);
     double car2U_x = u_odom_pos_.x - car_pose.x;
     double car2U_y = u_odom_pos_.y - car_pose.y;
 
@@ -442,13 +446,18 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
     {
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
+        ROS_WARN("car2U_dist:%.2f",car2U_dist);
         if (car2U_dist < u_radius_)
         {
-            ROS_INFO("U Reached !");
+            // ROS_WARN("U Reached !");
             u_flag_ = true;
         }
         else
         {
+            if(u_flag_)
+            {
+                ROS_INFO_ONCE("U OK!");
+            }
             u_flag_ = false;
         }
 
@@ -556,8 +565,8 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
             }
         }
-        pub_.publish(cmd_vel);
     }
+    pub_.publish(cmd_vel);
 }
 
     void Command();

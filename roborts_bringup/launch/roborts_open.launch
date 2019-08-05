@@ -1,6 +1,6 @@
 <launch>
   <master auto="start"/>
-  <arg name="map" value="214_8_1"/>
+  <arg name="map" value="map"/>
 
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
 
@@ -40,19 +40,31 @@
   <!-- <node pkg="art_racecar" type="art_car_controller" respawn="false" name="art_car_controller" output="screen"> -->
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">
     <!-- L1 -->
-    <param name="Vcmd" value="1.6" />
+    <param name="Vcmd" value="2.0" />
     <param name="controller_freq" value="45"/>
 
     <!-- ESC -->
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="5215"/>
+    <param name="MaxSpeed" value="5200"/>
+    <param name="min_speed_1_" value="5190"/>
+    <param name="min_speed_2_" value="5180"/>
+    <param name="min_speed_3_" value="5170"/>
+    <param name="min_speed_4_" value="5150"/>
+    <param name="min_speed_u_" value="5155"/>
+
+    <param name="pace_gain_u" value="-10"/>
+    <param name="pace_gain_1_" value="-6"/>
+    <param name="pace_gain_2_" value="-8"/>
+    <param name="pace_gain_3_" value="-9"/>
+    <param name="pace_gain_4_" value="-10"/>
+
     <!-- speed when car start -->
-    <param name="startSpeed" value="5100"/>
+    <param name="startSpeed" value="5105"/>
 
     <!-- Servo -->
     <param name="baseAngle" value="86.0"/>
     <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
-    <param name="AngleGain" value="-3.2"/>
+    <param name="AngleGain" value="-3.5"/>
     <!-- for tt02: >0, for hsp: <0 -->
 
     <!-- Topic -->
