@@ -54,7 +54,7 @@ public:
 
 private:
     ros::NodeHandle n_;
-    ros::Subscriber odom_sub, path_sub, goal_sub,point_sub;
+    ros::Subscriber odom_sub, path_sub, goal_sub, point_sub;
     ros::Publisher pub_, marker_pub;
     ros::Timer timer1, timer2;
     tf::TransformListener tf_listener;
@@ -74,7 +74,10 @@ private:
     int start_loop_, loop_;
     double start_speed_;
     bool foundForwardPt, goal_received, goal_reached;
-    bool go_;
+    bool go_, u_flag_;
+
+    int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
+    int min_speed_u_, min_speed_1_, min_speed_2_, min_speed_3_, min_speed_4_;
 
     void odomCB(const nav_msgs::Odometry::ConstPtr &odomMsg);
     void pathCB(const nav_msgs::Path::ConstPtr &pathMsg);
@@ -103,8 +106,22 @@ L1Controller::L1Controller()
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
-    pn.param("MaxSpeed", max_speed_, 5100);
+    pn.param("MaxSpeed", max_speed_, 5200);
     pn.param("baseAngle", baseAngle, 90.0);
+
+    pn.param("pace_gain_u", pace_gain_u_, -5);
+    pn.param("pace_gain_1_", pace_gain_1_, -5);
+    pn.param("pace_gain_2_", pace_gain_2_, -6);
+    pn.param("pace_gain_3_", pace_gain_3_, -8);
+    pn.param("pace_gain_4_", pace_gain_4_, -9);
+    pn.param("pace_gain_add_", pace_gain_add_, 8);
+
+
+    pn.param("min_speed_1_", min_speed_1_, 5190);
+    pn.param("min_speed_2_", min_speed_2_, 5180);
+    pn.param("min_speed_3_", min_speed_3_, 5170);
+    pn.param("min_speed_4_", min_speed_4_, 5160);
+    pn.param("min_speed_u_", min_speed_u_, 5155);
 
     //start
     pn.param("startSpeed", start_speed_, 5100.0);
@@ -121,13 +138,14 @@ L1Controller::L1Controller()
     goal_received = false;
     goal_reached = false;
     go_ = false;
+    u_flag_ = false;
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
     path_sub = n_.subscribe("/move_base_node/NavfnROS/plan", 1, &L1Controller::pathCB, this);
     goal_sub = n_.subscribe("/move_base_simple/goal", 1, &L1Controller::goalCB, this);
     point_sub = n_.subscribe("/clicked_point", 1, &L1Controller::pointCB, this);
-    
+
     marker_pub = n_.advertise<visualization_msgs::Marker>("car_path", 10);
     pub_ = n_.advertise<geometry_msgs::Twist>("car/cmd_vel", 1);
 
@@ -249,9 +267,8 @@ void L1Controller::pointCB(const geometry_msgs::PoseStamped::ConstPtr &pointMsg)
     {
         ROS_ERROR("%s", ex.what());
         ros::Duration(1.0).sleep();
-    }   
+    }
 }
-
 
 double L1Controller::getYawFromPose(const geometry_msgs::Pose &carPose)
 {
@@ -389,7 +406,7 @@ double L1Controller::getCar2UDist()
 
     double dist2U = sqrt(car2U_x * car2U_x + car2U_y * car2U_y);
 
-    return dist2U;   
+    return dist2U;
 }
 
 double L1Controller::getL1Distance(const double &_Vcmd)
@@ -425,11 +442,16 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
     {
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
-        if(car2U_dist < u_radius_)
+        if (car2U_dist < u_radius_)
         {
             ROS_INFO("U Reached !");
-
+            u_flag_ = true;
         }
+        else
+        {
+            u_flag_ = false;
+        }
+
         if (car2goal_dist < goalRadius)
         {
             ReStart();
@@ -454,12 +476,14 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
         if (foundForwardPt)
         {
-            double steering_angle = getSteeringAngle(eta)* Angle_gain;
+            double steering_angle = getSteeringAngle(eta) * Angle_gain;
             cmd_vel.angular.z = baseAngle + steering_angle;
 
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
+                int pace_gain = 0;
+                int min_speed = 5100;
                 if (loop_++ < start_loop_)
                 {
                     if (start_speed_ < max_speed_)
@@ -482,131 +506,118 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     {
                         steering_angle = -steering_angle;
                     }
-                    if (steering_angle >= 10.0 && steering_angle <= 20.0)
+
+                    if (u_flag_)
                     {
-                        if (now_speed_ <= 5190)
-                        {
-                            now_speed_ = 5190;
-                        }
-                        else
-                        {
-                            now_speed_ = now_speed_ - 4;
-                        }
-                    }
-                    if (steering_angle >= 20.0 && steering_angle <= 30.0)
-                    {
-                        if (now_speed_ <= 5190)
-                        {
-                            now_speed_ = 5190;
-                        }
-                        else
-                        {
-                            now_speed_ = now_speed_ - 6;
-                        }
-                    }
-                    else if (steering_angle >= 30.0 && steering_angle <= 40.0)
-                    {
-                        if (now_speed_ <= 5170)
-                        {
-                            now_speed_ = 5170;
-                        }
-                        else
-                        {
-                            now_speed_ = now_speed_ - 8;
-                        }
-                    }
-                    else if (steering_angle > 40.0)
-                    {
-                        if (now_speed_ <= 5160)
-                        {
-                            now_speed_ = 5160;
-                        }
-                        else
-                        {
-                            now_speed_ = now_speed_ - 15;
-                        }
+                        pace_gain = pace_gain_u_;
+                        min_speed = min_speed_u_;
                     }
                     else
                     {
-                        if (now_speed_ >= max_speed_)
+                        if (steering_angle > 10.0 && steering_angle < 20.0)
                         {
-                            now_speed_ = max_speed_;
+                            pace_gain = pace_gain_1_;
+                            min_speed = min_speed_1_;
+                        }
+                        else if (steering_angle > 20.0 && steering_angle < 30.0)
+                        {
+                            pace_gain = pace_gain_2_;
+                            min_speed = min_speed_2_;
+                        }
+                        else if (steering_angle > 30.0 && steering_angle < 40.0)
+                        {
+                            pace_gain = pace_gain_3_;
+                            min_speed = min_speed_3_;
+                        }
+                        else if (steering_angle > 40.0)
+                        {
+                            pace_gain = pace_gain_4_;
+                            min_speed = min_speed_4_;
                         }
                         else
                         {
-                            now_speed_ = now_speed_ + 6;
+                            pace_gain = pace_gain_add_;
+                            min_speed = 5200;
                         }
-                        Lfw = goalRadius = getL1Distance(Vcmd);
+                    }
+
+                    now_speed_ = now_speed_ + pace_gain;
+                    if (now_speed_ >= max_speed_)
+                    {
+                        now_speed_ = max_speed_;
+                    }
+                    else if (now_speed_ <= min_speed)
+                    {
+                        now_speed_ = min_speed;
                     }
                 }
-            }
-            cmd_vel.linear.x = now_speed_;
+                cmd_vel.linear.x = now_speed_;
 
-            ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n "
-                    ,cmd_vel.linear.x, cmd_vel.angular.z,steering_angle);
+                ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
+            }
         }
+        pub_.publish(cmd_vel);
     }
-    pub_.publish(cmd_vel);
 }
 
-void Command();
-char command = '0';
+    void Command();
+    char command = '0';
 
-/*****************/
-/* MAIN FUNCTION */
-/*****************/
-int main(int argc, char **argv)
-{
-    //Initiate ROS
-    ros::init(argc, argv, "L1Controller_v2");
-
-    auto command_thread = std::thread(Command);
-    L1Controller controller;
-
-    while (ros::ok())
+    /*****************/
+    /* MAIN FUNCTION */
+    /*****************/
+    int main(int argc, char **argv)
     {
-        switch (command)
+        //Initiate ROS
+        ros::init(argc, argv, "L1Controller_v2");
+
+        auto command_thread = std::thread(Command);
+        L1Controller controller;
+
+        while (ros::ok())
         {
-        case '1':
-            controller.GoCar();
-            command = '0';
-            break;
-        case '2':
-            controller.ReStart();
-            command = '0';
-            break;
-        case '3':
-            //TODO
-            command = '0';
-            break;
-        case 27:
-            if (command_thread.joinable())
+            switch (command)
             {
-                command_thread.join();
+            case '1':
+                controller.GoCar();
+                command = '0';
+                break;
+            case '2':
+                controller.ReStart();
+                command = '0';
+                break;
+            case '3':
+                //TODO
+                command = '0';
+                break;
+            case 27:
+                if (command_thread.joinable())
+                {
+                    command_thread.join();
+                }
+                return 0;
+            default:
+                break;
             }
-            return 0;
-        default:
-            break;
+            ros::spinOnce();
         }
-        ros::spinOnce();
+
+        return 0;
     }
 
-    return 0;
-}
-
-void Command()
-{
-    while (command != 27)
+    void Command()
     {
-        std::cout << "**************************************" << std::endl;
-        std::cout << "*********please send a command********" << std::endl;
-        std::cout << "> " << std::endl;
-        std::cout << "1: GO" << std::endl;
-        std::cout << "2: ReStart" << std::endl;
-        std::cout << "3: Set [Param]" << std::endl;
-        std::cout << "esc: exit program" << std::endl;
-        std::cout << "**************************************" << std::endl;
+        while (command != 27)
+        {
+            std::cout << "**************************************" << std::endl;
+            std::cout << "*********please send a command********" << std::endl;
+            std::cout << "> " << std::endl;
+            std::cout << "1: GO" << std::endl;
+            std::cout << "2: ReStart" << std::endl;
+            std::cout << "3: Set [Param]" << std::endl;
+            std::cout << "esc: exit program" << std::endl;
+            std::cout << "**************************************" << std::endl;
 
-        std::cin >> command;
+            std::cin >> command;
+        }
     }
-}
