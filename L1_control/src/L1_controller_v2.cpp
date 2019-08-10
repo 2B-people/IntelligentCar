@@ -50,7 +50,7 @@ public:
     double getGasInput(const float &current_v);
     void ReStart();
     void GoCar();
-    void SetValue(const int key);
+    void SetValue(const char key);
     geometry_msgs::Point get_odom_car2WayPtVec(const geometry_msgs::Pose &carPose);
 
 private:
@@ -156,6 +156,11 @@ L1Controller::L1Controller()
 
     //Visualization Marker Settings
     initMarker();
+}(
+
+void L1Controller::SetValue(const char key)
+{
+    
 }
 
 void L1Controller::ReStart()
@@ -258,6 +263,9 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
     {
         ROS_WARN("IN HARE");
         geometry_msgs::PointStamped odom_point;
+        ros::Time now = ros::Time::now();
+        odom_point.header.stamp=ros::Time(0);
+        tf_listener.waitForTransform("map","odom",now,ros::Duration(2.0));
         tf_listener.transformPoint("odom", *pointMsg, odom_point);
         u_odom_pos_ = odom_point.point;
 
@@ -404,7 +412,7 @@ double L1Controller::getCar2GoalDist()
 double L1Controller::getCar2UDist()
 {
     geometry_msgs::Point car_pose = odom.pose.pose.position;
-    ROS_INFO("car_pose x:%.2f y:%.2f ",car_pose.x,car_pose.y);
+    // ROS_INFO("car_pose x:%.2f y:%.2f ",car_pose.x,car_pose.y);
     double car2U_x = u_odom_pos_.x - car_pose.x;
     double car2U_y = u_odom_pos_.y - car_pose.y;
 
@@ -474,7 +482,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
-    Lfw = goalRadius = getL1Distance(carVel.linear.x);
+    // Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
@@ -497,7 +505,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 {
                     if (start_speed_ < max_speed_)
                     {
-                        start_speed_ = start_speed_ + 2;
+                        start_speed_ = start_speed_ + 3;
                         now_speed_ = start_speed_;
                     }
                     else
@@ -520,6 +528,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     {
                         pace_gain = pace_gain_u_;
                         min_speed = min_speed_u_;
+                        Lfw = goalRadius = getL1Distance(1.3);
                     }
                     else
                     {
@@ -527,26 +536,31 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                         {
                             pace_gain = pace_gain_1_;
                             min_speed = min_speed_1_;
+                            Lfw = goalRadius = getL1Distance(1.65);
                         }
                         else if (steering_angle > 20.0 && steering_angle < 30.0)
                         {
                             pace_gain = pace_gain_2_;
                             min_speed = min_speed_2_;
+                            Lfw = goalRadius = getL1Distance(1.55);
                         }
                         else if (steering_angle > 30.0 && steering_angle < 40.0)
                         {
                             pace_gain = pace_gain_3_;
                             min_speed = min_speed_3_;
+                            Lfw = goalRadius = getL1Distance(1.50);
                         }
                         else if (steering_angle > 40.0)
                         {
                             pace_gain = pace_gain_4_;
                             min_speed = min_speed_4_;
+                            Lfw = goalRadius = getL1Distance(1.2);
                         }
                         else
                         {
                             pace_gain = pace_gain_add_;
                             min_speed = 5200;
+                            Lfw = goalRadius = getL1Distance(2.0);
                         }
                     }
 
@@ -596,7 +610,8 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 command = '0';
                 break;
             case '3':
-                //TODO
+                //TODO change value
+
                 command = '0';
                 break;
             case 27:

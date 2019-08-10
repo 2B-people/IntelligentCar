@@ -21,7 +21,7 @@ void TwistCallback(const geometry_msgs::Twist& twist)
 int main(int argc, char** argv)
 {
     char data[] = "/dev/car";
-    art_racecar_init(38400,data);
+    art_racecar_init(115200,data);
     ros::init(argc, argv, "art_driver");
     ros::NodeHandle n;
 
