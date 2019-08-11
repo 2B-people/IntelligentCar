@@ -115,8 +115,7 @@ L1Controller::L1Controller()
     pn.param("pace_gain_2_", pace_gain_2_, -6);
     pn.param("pace_gain_3_", pace_gain_3_, -8);
     pn.param("pace_gain_4_", pace_gain_4_, -9);
-    pn.param("pace_gain_add_", pace_gain_add_, 8);
-
+    pn.param("pace_gain_add_", pace_gain_add_, 6);
 
     pn.param("min_speed_1_", min_speed_1_, 5190);
     pn.param("min_speed_2_", min_speed_2_, 5180);
@@ -155,12 +154,12 @@ L1Controller::L1Controller()
     timer2 = n_.createTimer(ros::Duration((0.5) / controller_freq), &L1Controller::goalReachingCB, this); // Duration(0.05) -> 20Hz
 
     //Visualization Marker Settings
+
     initMarker();
-}(
+}
 
 void L1Controller::SetValue(const char key)
 {
-    
 }
 
 void L1Controller::ReStart()
@@ -264,12 +263,12 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
         ROS_WARN("IN HARE");
         geometry_msgs::PointStamped odom_point;
         ros::Time now = ros::Time::now();
-        odom_point.header.stamp=ros::Time(0);
-        tf_listener.waitForTransform("map","odom",now,ros::Duration(2.0));
+        odom_point.header.stamp = ros::Time(0);
+        tf_listener.waitForTransform("map", "odom", now, ros::Duration(2.0));
         tf_listener.transformPoint("odom", *pointMsg, odom_point);
         u_odom_pos_ = odom_point.point;
 
-        ROS_INFO("u_odom_pos_.x: %0.2f u_odom_pos_.y: %0.2f",u_odom_pos_.x ,u_odom_pos_.y);
+        ROS_INFO("u_odom_pos_.x: %0.2f u_odom_pos_.y: %0.2f", u_odom_pos_.x, u_odom_pos_.y);
         /*Draw Goal on RVIZ*/
         goal_circle.pose.position = u_odom_pos_;
         marker_pub.publish(goal_circle);
@@ -425,7 +424,7 @@ double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.5;
+        L1 = 3 / 3.7;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
         L1 = _Vcmd * 2.24 / 3.0;
     else
@@ -449,12 +448,12 @@ double L1Controller::getGasInput(const float &current_v)
 
 void L1Controller::goalReachingCB(const ros::TimerEvent &)
 {
-
-    if (goal_received)
+    if (goal_received && go_)
     {
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
-        ROS_WARN("car2U_dist:%.2f",car2U_dist);
+        ROS_WARN("car2U_dist:%.2f", car2U_dist);
+        
         if (car2U_dist < u_radius_)
         {
             // ROS_WARN("U Reached !");
@@ -462,7 +461,7 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
         }
         else
         {
-            if(u_flag_)
+            if (u_flag_)
             {
                 ROS_INFO_ONCE("U OK!");
             }
@@ -479,9 +478,28 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
 
 void L1Controller::controlLoopCB(const ros::TimerEvent &)
 {
-
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
+    if (now_speed_ <= 5210)
+    {
+        Lfw = goalRadius = getL1Distance(1.30);
+    }
+    else if (now_speed_ <= 5230 && now_speed_ > 5210)
+    {
+        Lfw = goalRadius = getL1Distance(1.40);
+    }
+    else if (now_speed_ <= 5250 && now_speed_ > 5230)
+    {
+        Lfw = goalRadius = getL1Distance(1.50);
+    }
+    else if (now_speed_ <= 5280 && now_speed_ > 5250)
+    {
+        Lfw = goalRadius = getL1Distance(1.60);
+    }
+    else if (now_speed_ > 5280)
+    {
+        Lfw = goalRadius = getL1Distance(2.0);
+    }
     // Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
@@ -501,79 +519,81 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             {
                 int pace_gain = 0;
                 int min_speed = 5100;
-                if (loop_++ < start_loop_)
+                // 加上编码器里程计,不需要启动减速
+                // if (loop_++ < start_loop_)
+                // {
+                //     if (start_speed_ < max_speed_)
+                //     {
+                //         start_speed_ = start_speed_ + 3;
+                //         now_speed_ = start_speed_;
+                //     }
+                //     else
+                //     {
+                //         loop_ = start_loop_;
+                //     }
+                // }
+                // else
+                // double u = getGasInput(carVel.linear.x);
+                // cmd_vel.linear.x = max_speed_ - u;
+
+                //abs steering_angle;
+                if (steering_angle < 0.0)
                 {
-                    if (start_speed_ < max_speed_)
-                    {
-                        start_speed_ = start_speed_ + 3;
-                        now_speed_ = start_speed_;
-                    }
-                    else
-                    {
-                        loop_ = start_loop_;
-                    }
+                    steering_angle = -steering_angle;
+                }
+
+                if (u_flag_)
+                {
+                    pace_gain = pace_gain_u_;
+                    min_speed = min_speed_u_;
+                    // cmd_vel.angular.z = baseAngle + steering_angle*1.05;
+                    // Lfw = goalRadius = getL1Distance(1.3);
                 }
                 else
                 {
-                    // double u = getGasInput(carVel.linear.x);
-                    // cmd_vel.linear.x = max_speed_ - u;
-
-                    //abs steering_angle;
-                    if (steering_angle < 0.0)
+                    if (steering_angle > 10.0 && steering_angle < 20.0)
                     {
-                        steering_angle = -steering_angle;
+                        pace_gain = pace_gain_1_;
+                        min_speed = min_speed_1_;
+                        // Lfw = goalRadius = getL1Distance(1.75);
                     }
-
-                    if (u_flag_)
+                    else if (steering_angle > 20.0 && steering_angle < 30.0)
                     {
-                        pace_gain = pace_gain_u_;
-                        min_speed = min_speed_u_;
-                        Lfw = goalRadius = getL1Distance(1.3);
+                        pace_gain = pace_gain_2_;
+                        min_speed = min_speed_2_;
+                        // Lfw = goalRadius = getL1Distance(1.6);
+                    }
+                    else if (steering_angle > 30.0 && steering_angle < 40.0)
+                    {
+                        pace_gain = pace_gain_3_;
+                        min_speed = min_speed_3_;
+                        // Lfw = goalRadius = getL1Distance(1.45);
+                    }
+                    else if (steering_angle > 40.0)
+                    {
+                        pace_gain = pace_gain_4_;
+                        min_speed = min_speed_4_;
+                        // Lfw = goalRadius = getL1Distance(1.2);
                     }
                     else
                     {
-                        if (steering_angle > 10.0 && steering_angle < 20.0)
-                        {
-                            pace_gain = pace_gain_1_;
-                            min_speed = min_speed_1_;
-                            Lfw = goalRadius = getL1Distance(1.65);
-                        }
-                        else if (steering_angle > 20.0 && steering_angle < 30.0)
-                        {
-                            pace_gain = pace_gain_2_;
-                            min_speed = min_speed_2_;
-                            Lfw = goalRadius = getL1Distance(1.55);
-                        }
-                        else if (steering_angle > 30.0 && steering_angle < 40.0)
-                        {
-                            pace_gain = pace_gain_3_;
-                            min_speed = min_speed_3_;
-                            Lfw = goalRadius = getL1Distance(1.50);
-                        }
-                        else if (steering_angle > 40.0)
-                        {
-                            pace_gain = pace_gain_4_;
-                            min_speed = min_speed_4_;
-                            Lfw = goalRadius = getL1Distance(1.2);
-                        }
-                        else
-                        {
-                            pace_gain = pace_gain_add_;
-                            min_speed = 5200;
-                            Lfw = goalRadius = getL1Distance(2.0);
-                        }
-                    }
-
-                    now_speed_ = now_speed_ + pace_gain;
-                    if (now_speed_ >= max_speed_)
-                    {
-                        now_speed_ = max_speed_;
-                    }
-                    else if (now_speed_ <= min_speed)
-                    {
-                        now_speed_ = min_speed;
+                        pace_gain = pace_gain_add_;
+                        min_speed = 5200;
+                        // Lfw = goalRadius = getL1Distance(2.0);
                     }
                 }
+
+                now_speed_ = now_speed_ + pace_gain;
+
+                if (now_speed_ >= max_speed_)
+                {
+                    now_speed_ = max_speed_;
+                }
+                else if (now_speed_ <= min_speed)
+                {
+                    now_speed_ = min_speed;
+                }
+
                 cmd_vel.linear.x = now_speed_;
 
                 ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
@@ -583,65 +603,65 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
     pub_.publish(cmd_vel);
 }
 
-    void Command();
-    char command = '0';
+void Command();
+char command = '0';
 
-    /*****************/
-    /* MAIN FUNCTION */
-    /*****************/
-    int main(int argc, char **argv)
+/*****************/
+/* MAIN FUNCTION */
+/*****************/
+int main(int argc, char **argv)
+{
+    //Initiate ROS
+    ros::init(argc, argv, "L1Controller_v2");
+
+    auto command_thread = std::thread(Command);
+    L1Controller controller;
+
+    while (ros::ok())
     {
-        //Initiate ROS
-        ros::init(argc, argv, "L1Controller_v2");
-
-        auto command_thread = std::thread(Command);
-        L1Controller controller;
-
-        while (ros::ok())
+        switch (command)
         {
-            switch (command)
+        case '1':
+            controller.GoCar();
+            command = '0';
+            break;
+        case '2':
+            controller.ReStart();
+            command = '0';
+            break;
+        case '3':
+            //TODO change value
+
+            command = '0';
+            break;
+        case 27:
+            if (command_thread.joinable())
             {
-            case '1':
-                controller.GoCar();
-                command = '0';
-                break;
-            case '2':
-                controller.ReStart();
-                command = '0';
-                break;
-            case '3':
-                //TODO change value
-
-                command = '0';
-                break;
-            case 27:
-                if (command_thread.joinable())
-                {
-                    command_thread.join();
-                }
-                return 0;
-            default:
-                break;
+                command_thread.join();
             }
-            ros::spinOnce();
+            return 0;
+        default:
+            break;
         }
-
-        return 0;
+        ros::spinOnce();
     }
 
-    void Command()
+    return 0;
+}
+
+void Command()
+{
+    while (command != 27)
     {
-        while (command != 27)
-        {
-            std::cout << "**************************************" << std::endl;
-            std::cout << "*********please send a command********" << std::endl;
-            std::cout << "> " << std::endl;
-            std::cout << "1: GO" << std::endl;
-            std::cout << "2: ReStart" << std::endl;
-            std::cout << "3: Set [Param]" << std::endl;
-            std::cout << "esc: exit program" << std::endl;
-            std::cout << "**************************************" << std::endl;
+        std::cout << "**************************************" << std::endl;
+        std::cout << "*********please send a command********" << std::endl;
+        std::cout << "> " << std::endl;
+        std::cout << "1: GO" << std::endl;
+        std::cout << "2: ReStart" << std::endl;
+        std::cout << "3: Set [Param]" << std::endl;
+        std::cout << "esc: exit program" << std::endl;
+        std::cout << "**************************************" << std::endl;
 
-            std::cin >> command;
-        }
+        std::cin >> command;
     }
+}
