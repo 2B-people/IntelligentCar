@@ -47,19 +47,19 @@
 
     <!-- ESC -->
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="5260"/>
-    <param name="min_speed_1_" value="5230"/>
-    <param name="min_speed_2_" value="5210"/>
-    <param name="min_speed_3_" value="5180"/>
-    <param name="min_speed_4_" value="5170"/>
-    <param name="min_speed_u_" value="5190"/>
+    <param name="MaxSpeed" value="5300"/>
+    <param name="set_speed_1_" value="5230"/>
+    <param name="set_speed_2_" value="5210"/>
+    <param name="set_speed_3_" value="5180"/>
+    <param name="set_speed_4_" value="5170"/>
+    <param name="set_speed_u_" value="5190"/>
 
-    <param name="pace_gain_u" value="-10"/>
+    <!-- <param name="pace_gain_u" value="-10"/>
     <param name="pace_gain_1_" value="-5"/>
     <param name="pace_gain_2_" value="-10"/>
     <param name="pace_gain_3_" value="-20"/>
     <param name="pace_gain_4_" value="-20"/>
-    <param name="pace_gain_add_" value="30"/>
+    <param name="pace_gain_add_" value="30"/> -->
 
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/>

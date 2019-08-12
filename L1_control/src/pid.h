@@ -1,6 +1,8 @@
 #ifndef __PID_H_
 #define __PID_H_
 
+#include <stdint.h>
+
 enum PidTpyeDef
 {
   LLAST = 0,

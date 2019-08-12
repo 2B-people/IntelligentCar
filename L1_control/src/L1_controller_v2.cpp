@@ -29,7 +29,7 @@ along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 
-#include <pid.h>
+#include "pid.h"
 
 #define PI 3.14159265358979
 
@@ -80,14 +80,12 @@ private:
     double u_radius_;
     int controller_freq, max_speed_;
     int now_speed_;
-    int start_loop_, loop_;
-    double start_speed_;
+
     double distance_kp_;
-    bool foundForwardPt, goal_received, goal_reached;
-    bool go_, u_flag_;
+    double kp_, ki_, kd_;
 
     int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
-    int min_speed_u_, min_speed_1_, min_speed_2_, min_speed_3_, min_speed_4_;
+    int set_speed_u_, set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
 
     bool foundForwardPt, goal_received, goal_reached;
     bool go_, u_flag_;
@@ -101,7 +99,7 @@ private:
 
 }; // end of class
 
-L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
+L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
 {
     //Private parameters handler
     ros::NodeHandle pn("~");
@@ -120,21 +118,21 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
-    pn.param("MaxSpeed", max_speed_, 5200);
+    pn.param("MaxSpeed", max_speed_, 200);
     pn.param("baseAngle", baseAngle, 90.0);
 
-    pn.param("pace_gain_u", pace_gain_u_, -4);
-    pn.param("pace_gain_1_", pace_gain_1_, -5);
-    pn.param("pace_gain_2_", pace_gain_2_, -6);
-    pn.param("pace_gain_3_", pace_gain_3_, -8);
-    pn.param("pace_gain_4_", pace_gain_4_, -9);
-    pn.param("pace_gain_add_", pace_gain_add_, 6);
+    // pn.param("pace_gain_u", pace_gain_u_, -4);
+    // pn.param("pace_gain_1_", pace_gain_1_, -5);
+    // pn.param("pace_gain_2_", pace_gain_2_, -6);
+    // pn.param("pace_gain_3_", pace_gain_3_, -8);
+    // pn.param("pace_gain_4_", pace_gain_4_, -9);
+    // pn.param("pace_gain_add_", pace_gain_add_, 6);
 
-    pn.param("min_speed_1_", min_speed_1_, 5190);
-    pn.param("min_speed_2_", min_speed_2_, 5180);
-    pn.param("min_speed_3_", min_speed_3_, 5170);
-    pn.param("min_speed_4_", min_speed_4_, 5165);
-    pn.param("min_speed_u_", min_speed_u_, 5160);
+    pn.param("set_speed_1_", set_speed_1_, 180);
+    pn.param("set_speed_2_", set_speed_2_, 170);
+    pn.param("set_speed_3_", set_speed_3_, 150);
+    pn.param("set_speed_4_", set_speed_4_, 100);
+    pn.param("set_speed_u_", set_speed_u_, 100);
 
     //start
     // pn.param("startSpeed", start_speed_, 5100.0);
@@ -142,7 +140,8 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     // loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
-    u_radius_ = 3.0;
+    pn.param("u_radius_", u_radius_, 3.0);
+
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 5000 for stop
     cmd_vel.angular.z = baseAngle;
@@ -157,7 +156,7 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     pn.param("ki", ki_, 0.0);
     pn.param("kd", kd_, 0.0);
 
-    pid_.resetPid(kp_,ki_,kd_);
+    pid_.resetPid(kp_, ki_, kd_);
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
@@ -202,12 +201,13 @@ void L1Controller::SetValue(const char key)
 
 void L1Controller::ReStart()
 {
-    start_speed_ = 5100;
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 1500 for stop
     cmd_vel.angular.z = baseAngle;
 
-    loop_ = 0;
+    //not use
+    // start_speed_ = 5100;
+    // loop_ = 0;
 
     goal_reached = true;
     goal_received = false;
@@ -243,8 +243,8 @@ void L1Controller::initMarker()
     //LINE_STRIP markers use only the x component of scale, for the line width
     line_strip.scale.x = 0.1;
 
-    goal_circle.scale.x = goalRadius;
-    goal_circle.scale.y = goalRadius;
+    goal_circle.scale.x = u_radius_;
+    goal_circle.scale.y = u_radius_;
     goal_circle.scale.z = 0.1;
 
     // Points are green
@@ -490,19 +490,17 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
     {
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
-        ROS_WARN("car2U_dist:%.2f", car2U_dist);
 
         if (car2U_dist < u_radius_)
         {
-            // ROS_WARN("U Reached !");
+            ROS_WARN("car2U_dist:%.2f", car2U_dist);
+
             u_flag_ = true;
         }
         else
         {
-            if (u_flag_)
-            {
-                ROS_WARN_ONCE("U OK!");
-            }
+            ROS_INFO("car2U_dist:%.2f", car2U_dist);
+
             u_flag_ = false;
         }
 
@@ -536,7 +534,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             if (!goal_reached)
             {
                 int pace_gain = 0;
-                int min_speed = 5100;
+                double set_speed_cm = 0.0;
                 // 加上编码器里程计,不需要启动减速
                 // if (loop_++ < start_loop_)
                 // {
@@ -562,54 +560,44 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
                 if (u_flag_)
                 {
-                    pace_gain = pace_gain_u_;
-                    min_speed = min_speed_u_;
-                    // cmd_vel.angular.z = baseAngle + steering_angle*1.05;
-                    // Lfw = goalRadius = getL1Distance(1.3);
+                    set_speed_cm = set_speed_u_;
                 }
                 else
                 {
                     if (steering_angle > 10.0 && steering_angle < 20.0)
                     {
-                        pace_gain = pace_gain_1_;
-                        min_speed = min_speed_1_;
-                        // Lfw = goalRadius = getL1Distance(1.75);
+                        set_speed_cm = set_speed_1_;
                     }
                     else if (steering_angle > 20.0 && steering_angle < 30.0)
                     {
-                        pace_gain = pace_gain_2_;
-                        min_speed = min_speed_2_;
-                        // Lfw = goalRadius = getL1Distance(1.6);
+                        set_speed_cm = set_speed_2_;
                     }
                     else if (steering_angle > 30.0 && steering_angle < 40.0)
                     {
-                        pace_gain = pace_gain_3_;
-                        min_speed = min_speed_3_;
-                        // Lfw = goalRadius = getL1Distance(1.45);
+                        set_speed_cm = set_speed_3_;
                     }
                     else if (steering_angle > 40.0)
                     {
-                        pace_gain = pace_gain_4_;
-                        min_speed = min_speed_4_;
-                        // Lfw = goalRadius = getL1Distance(1.2);
+                        set_speed_cm = set_speed_4_;
                     }
                     else
                     {
-                        pace_gain = pace_gain_add_;
-                        min_speed = 5200;
-                        // Lfw = goalRadius = getL1Distance(2.0);
+                        set_speed_cm = max_speed_;
                     }
                 }
 
-                now_speed_ = now_speed_ + pace_gain;
+                double pid_out = pid_.calcPid(set_speed_cm, carVel.linear.x * 100);
 
-                if (now_speed_ >= max_speed_)
+                pid_out = pid_out / 4.0;
+                now_speed_ = now_speed_ + (int)pid_out;
+
+                if (now_speed_ >= 5260)
                 {
-                    now_speed_ = max_speed_;
+                    now_speed_ = 5260;
                 }
-                else if (now_speed_ <= min_speed)
+                else if (now_speed_ <= 5150)
                 {
-                    now_speed_ = min_speed;
+                    now_speed_ = 5150;
                 }
 
                 cmd_vel.linear.x = now_speed_;
