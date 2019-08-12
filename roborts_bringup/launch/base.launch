@@ -10,7 +10,7 @@
   <!-- Run the Base Node -->
   <!-- <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" /> -->
   <!-- <node pkg="art_driver" type="art_driver_node" name="art_driver_node" output="screen"/> -->
-  <node pkg="car_driver" type="car_driver" name="car_driver" output="screen"/>
+  <node pkg="car_driver" type="car_driver" name="car_driver" />
   <!-- Run the lidar node -->
   <include file="$(find roborts_bringup)/launch/include/ls01g.launch"/>
 

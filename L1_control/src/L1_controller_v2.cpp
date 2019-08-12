@@ -80,8 +80,16 @@ private:
     double u_radius_;
     int controller_freq, max_speed_;
     int now_speed_;
+<<<<<<< HEAD
 
     double kp_,ki_,kd_;
+=======
+    int start_loop_, loop_;
+    double start_speed_;
+    double distance_kp_;
+    bool foundForwardPt, goal_received, goal_reached;
+    bool go_, u_flag_;
+>>>>>>> 733b21adf9d8d3277d8a8054cdee7ec99da162ef
 
     int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
     int min_speed_u_, min_speed_1_, min_speed_2_, min_speed_3_, min_speed_4_;
@@ -112,6 +120,7 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     pn.param("L", L, 0.26);
     pn.param("Vcmd", Vcmd, 1.0);
     pn.param("lfw", lfw, 0.13);
+    pn.param("distance_kp_", distance_kp_, 2.4);
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
@@ -124,8 +133,7 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     pn.param("pace_gain_2_", pace_gain_2_, -6);
     pn.param("pace_gain_3_", pace_gain_3_, -8);
     pn.param("pace_gain_4_", pace_gain_4_, -9);
-    pn.param("pace_gain_add_", pace_gain_add_, 8);
-
+    pn.param("pace_gain_add_", pace_gain_add_, 6);
 
     pn.param("min_speed_1_", min_speed_1_, 5190);
     pn.param("min_speed_2_", min_speed_2_, 5180);
@@ -139,7 +147,7 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     // loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
-    u_radius_ = 2.5;
+    u_radius_ = 3.0;
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 5000 for stop
     cmd_vel.angular.z = baseAngle;
@@ -170,12 +178,31 @@ L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
     timer2 = n_.createTimer(ros::Duration((0.5) / controller_freq), &L1Controller::goalReachingCB, this); // Duration(0.05) -> 20Hz
 
     //Visualization Marker Settings
+
     initMarker();
-}(
+}
 
 void L1Controller::SetValue(const char key)
 {
-    
+    switch (key)
+    {
+    case '1':
+        distance_kp_ = distance_kp_ + 0.05;
+        std::cout << "distance_kp is:" << distance_kp_ << std::endl;
+        break;
+    case '2':
+        distance_kp_ = distance_kp_ - 0.05;
+        std::cout << "distance_kp is:" << distance_kp_ << std::endl;
+        break;
+    case 27:
+        std::cout << "no thing set" << std::endl;
+        break;
+    default:
+        break;
+    }
+    std::cout << "**************************************" << std::endl;
+    std::cout << std::endl;
+    return;
 }
 
 void L1Controller::ReStart()
@@ -279,12 +306,12 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
         ROS_WARN("IN HARE");
         geometry_msgs::PointStamped odom_point;
         ros::Time now = ros::Time::now();
-        odom_point.header.stamp=ros::Time(0);
-        tf_listener.waitForTransform("map","odom",now,ros::Duration(2.0));
+        odom_point.header.stamp = ros::Time::now();
+        tf_listener.waitForTransform("map", "odom", now, ros::Duration(2.0));
         tf_listener.transformPoint("odom", *pointMsg, odom_point);
         u_odom_pos_ = odom_point.point;
 
-        ROS_INFO("u_odom_pos_.x: %0.2f u_odom_pos_.y: %0.2f",u_odom_pos_.x ,u_odom_pos_.y);
+        ROS_INFO("u_odom_pos_.x: %0.2f u_odom_pos_.y: %0.2f", u_odom_pos_.x, u_odom_pos_.y);
         /*Draw Goal on RVIZ*/
         goal_circle.pose.position = u_odom_pos_;
         marker_pub.publish(goal_circle);
@@ -440,9 +467,9 @@ double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.5;
+        L1 = 3 / 3.6;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
-        L1 = _Vcmd * 2.24 / 3.0;
+        L1 = _Vcmd * distance_kp_ / 3.0;
     else
         L1 = 12 / 3.0;
     return L1;
@@ -464,12 +491,12 @@ double L1Controller::getGasInput(const float &current_v)
 
 void L1Controller::goalReachingCB(const ros::TimerEvent &)
 {
-
-    if (goal_received)
+    if (goal_received && go_)
     {
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
-        ROS_WARN("car2U_dist:%.2f",car2U_dist);
+        ROS_WARN("car2U_dist:%.2f", car2U_dist);
+
         if (car2U_dist < u_radius_)
         {
             // ROS_WARN("U Reached !");
@@ -477,9 +504,9 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
         }
         else
         {
-            if(u_flag_)
+            if (u_flag_)
             {
-                ROS_INFO_ONCE("U OK!");
+                ROS_WARN_ONCE("U OK!");
             }
             u_flag_ = false;
         }
@@ -494,10 +521,9 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
 
 void L1Controller::controlLoopCB(const ros::TimerEvent &)
 {
-
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
-    // Lfw = goalRadius = getL1Distance(carVel.linear.x);
+    Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
@@ -516,79 +542,81 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             {
                 int pace_gain = 0;
                 int min_speed = 5100;
-                if (loop_++ < start_loop_)
+                // 加上编码器里程计,不需要启动减速
+                // if (loop_++ < start_loop_)
+                // {
+                //     if (start_speed_ < max_speed_)
+                //     {
+                //         start_speed_ = start_speed_ + 3;
+                //         now_speed_ = start_speed_;
+                //     }
+                //     else
+                //     {
+                //         loop_ = start_loop_;
+                //     }
+                // }
+                // else
+                // double u = getGasInput(carVel.linear.x);
+                // cmd_vel.linear.x = max_speed_ - u;
+
+                //abs steering_angle;
+                if (steering_angle < 0.0)
                 {
-                    if (start_speed_ < max_speed_)
-                    {
-                        start_speed_ = start_speed_ + 3;
-                        now_speed_ = start_speed_;
-                    }
-                    else
-                    {
-                        loop_ = start_loop_;
-                    }
+                    steering_angle = -steering_angle;
+                }
+
+                if (u_flag_)
+                {
+                    pace_gain = pace_gain_u_;
+                    min_speed = min_speed_u_;
+                    // cmd_vel.angular.z = baseAngle + steering_angle*1.05;
+                    // Lfw = goalRadius = getL1Distance(1.3);
                 }
                 else
                 {
-                    // double u = getGasInput(carVel.linear.x);
-                    // cmd_vel.linear.x = max_speed_ - u;
-
-                    //abs steering_angle;
-                    if (steering_angle < 0.0)
+                    if (steering_angle > 10.0 && steering_angle < 20.0)
                     {
-                        steering_angle = -steering_angle;
+                        pace_gain = pace_gain_1_;
+                        min_speed = min_speed_1_;
+                        // Lfw = goalRadius = getL1Distance(1.75);
                     }
-
-                    if (u_flag_)
+                    else if (steering_angle > 20.0 && steering_angle < 30.0)
                     {
-                        pace_gain = pace_gain_u_;
-                        min_speed = min_speed_u_;
-                        Lfw = goalRadius = getL1Distance(1.3);
+                        pace_gain = pace_gain_2_;
+                        min_speed = min_speed_2_;
+                        // Lfw = goalRadius = getL1Distance(1.6);
+                    }
+                    else if (steering_angle > 30.0 && steering_angle < 40.0)
+                    {
+                        pace_gain = pace_gain_3_;
+                        min_speed = min_speed_3_;
+                        // Lfw = goalRadius = getL1Distance(1.45);
+                    }
+                    else if (steering_angle > 40.0)
+                    {
+                        pace_gain = pace_gain_4_;
+                        min_speed = min_speed_4_;
+                        // Lfw = goalRadius = getL1Distance(1.2);
                     }
                     else
                     {
-                        if (steering_angle > 10.0 && steering_angle < 20.0)
-                        {
-                            pace_gain = pace_gain_1_;
-                            min_speed = min_speed_1_;
-                            Lfw = goalRadius = getL1Distance(1.65);
-                        }
-                        else if (steering_angle > 20.0 && steering_angle < 30.0)
-                        {
-                            pace_gain = pace_gain_2_;
-                            min_speed = min_speed_2_;
-                            Lfw = goalRadius = getL1Distance(1.55);
-                        }
-                        else if (steering_angle > 30.0 && steering_angle < 40.0)
-                        {
-                            pace_gain = pace_gain_3_;
-                            min_speed = min_speed_3_;
-                            Lfw = goalRadius = getL1Distance(1.50);
-                        }
-                        else if (steering_angle > 40.0)
-                        {
-                            pace_gain = pace_gain_4_;
-                            min_speed = min_speed_4_;
-                            Lfw = goalRadius = getL1Distance(1.2);
-                        }
-                        else
-                        {
-                            pace_gain = pace_gain_add_;
-                            min_speed = 5200;
-                            Lfw = goalRadius = getL1Distance(2.0);
-                        }
-                    }
-
-                    now_speed_ = now_speed_ + pace_gain;
-                    if (now_speed_ >= max_speed_)
-                    {
-                        now_speed_ = max_speed_;
-                    }
-                    else if (now_speed_ <= min_speed)
-                    {
-                        now_speed_ = min_speed;
+                        pace_gain = pace_gain_add_;
+                        min_speed = 5200;
+                        // Lfw = goalRadius = getL1Distance(2.0);
                     }
                 }
+
+                now_speed_ = now_speed_ + pace_gain;
+
+                if (now_speed_ >= max_speed_)
+                {
+                    now_speed_ = max_speed_;
+                }
+                else if (now_speed_ <= min_speed)
+                {
+                    now_speed_ = min_speed;
+                }
+
                 cmd_vel.linear.x = now_speed_;
 
                 ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
@@ -598,55 +626,57 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
     pub_.publish(cmd_vel);
 }
 
-    void Command();
-    char command = '0';
+void Command();
+char SetValueCmd();
+char command = '0';
 
-    /*****************/
-    /* MAIN FUNCTION */
-    /*****************/
-    int main(int argc, char **argv)
+/*****************/
+/* MAIN FUNCTION */
+/*****************/
+int main(int argc, char **argv)
+{
+    //Initiate ROS
+    ros::init(argc, argv, "L1Controller_v2");
+
+    auto command_thread = std::thread(Command);
+    L1Controller controller;
+
+    while (ros::ok())
     {
-        //Initiate ROS
-        ros::init(argc, argv, "L1Controller_v2");
-
-        auto command_thread = std::thread(Command);
-        L1Controller controller;
-
-        while (ros::ok())
+        switch (command)
         {
-            switch (command)
+        case '1':
+            controller.GoCar();
+            command = '0';
+            break;
+        case '2':
+            controller.ReStart();
+            command = '0';
+            break;
+        case '3':
+            controller.SetValue(SetValueCmd());
+            command = '0';
+            break;
+        case 27:
+            if (command_thread.joinable())
             {
-            case '1':
-                controller.GoCar();
-                command = '0';
-                break;
-            case '2':
-                controller.ReStart();
-                command = '0';
-                break;
-            case '3':
-                //TODO change value
-
-                command = '0';
-                break;
-            case 27:
-                if (command_thread.joinable())
-                {
-                    command_thread.join();
-                }
-                return 0;
-            default:
-                break;
+                command_thread.join();
             }
-            ros::spinOnce();
+            return 0;
+        default:
+            break;
         }
-
-        return 0;
+        ros::spinOnce();
     }
 
-    void Command()
+    return 0;
+}
+
+void Command()
+{
+    while (command != 27)
     {
-        while (command != 27)
+        if (command == '0')
         {
             std::cout << "**************************************" << std::endl;
             std::cout << "*********please send a command********" << std::endl;
@@ -656,7 +686,20 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             std::cout << "3: Set [Param]" << std::endl;
             std::cout << "esc: exit program" << std::endl;
             std::cout << "**************************************" << std::endl;
-
             std::cin >> command;
         }
     }
+}
+
+char SetValueCmd()
+{
+    char value = 27;
+    std::cout << "************IN Set [Param]***********" << std::endl;
+    std::cout << "> " << std::endl;
+    std::cout << "1:distance + 0.05" << std::endl;
+    std::cout << "2:distance - 0.05" << std::endl;
+    std::cout << "**************************************" << std::endl;
+
+    std::cin >> value;
+    return value;
+}
