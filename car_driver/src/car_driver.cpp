@@ -28,7 +28,7 @@ const float ODOM_AXLE_TRACK_2WD = 14.375;
 const float ODOM_ANGULAR_COEF_2WD = 1.0 / (ODOM_AXLE_TRACK_2WD * 2.54 / 100);  // rad per meter
 const float ODOM_TRACTION_FACTOR_2WD = 0.610;      //牵引系数
 
-const double kp = 1.1;
+const double kp = 1.0;
 
 double Pulse2mms(int16_t pulse_vel)
 {

@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "geometry": "cpp"
+        "geometry": "cpp",
+        "iostream": "cpp"
     }
 }

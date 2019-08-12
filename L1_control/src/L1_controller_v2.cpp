@@ -74,6 +74,7 @@ private:
     int now_speed_;
     int start_loop_, loop_;
     double start_speed_;
+    double distance_kp_;
     bool foundForwardPt, goal_received, goal_reached;
     bool go_, u_flag_;
 
@@ -103,6 +104,7 @@ L1Controller::L1Controller()
     pn.param("L", L, 0.26);
     pn.param("Vcmd", Vcmd, 1.0);
     pn.param("lfw", lfw, 0.13);
+    pn.param("distance_kp_", distance_kp_, 2.4);
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
@@ -129,7 +131,7 @@ L1Controller::L1Controller()
     loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
-    u_radius_ = 2.5;
+    u_radius_ = 3.0;
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 5000 for stop
     cmd_vel.angular.z = baseAngle;
@@ -160,6 +162,25 @@ L1Controller::L1Controller()
 
 void L1Controller::SetValue(const char key)
 {
+    switch (key)
+    {
+    case '1':
+        distance_kp_ = distance_kp_ + 0.05;
+        std::cout << "distance_kp is:" << distance_kp_ << std::endl;
+        break;
+    case '2':
+        distance_kp_ = distance_kp_ - 0.05;
+        std::cout << "distance_kp is:" << distance_kp_ << std::endl;
+        break;
+    case 27:
+        std::cout << "no thing set" << std::endl;
+        break;
+    default:
+        break;
+    }
+    std::cout << "**************************************" << std::endl;
+    std::cout << std::endl;
+    return;
 }
 
 void L1Controller::ReStart()
@@ -263,7 +284,7 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
         ROS_WARN("IN HARE");
         geometry_msgs::PointStamped odom_point;
         ros::Time now = ros::Time::now();
-        odom_point.header.stamp = ros::Time(0);
+        odom_point.header.stamp = ros::Time::now();
         tf_listener.waitForTransform("map", "odom", now, ros::Duration(2.0));
         tf_listener.transformPoint("odom", *pointMsg, odom_point);
         u_odom_pos_ = odom_point.point;
@@ -424,9 +445,9 @@ double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.7;
+        L1 = 3 / 3.6;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
-        L1 = _Vcmd * 2.24 / 3.0;
+        L1 = _Vcmd * distance_kp_ / 3.0;
     else
         L1 = 12 / 3.0;
     return L1;
@@ -453,7 +474,7 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
         double car2goal_dist = getCar2GoalDist();
         double car2U_dist = getCar2UDist();
         ROS_WARN("car2U_dist:%.2f", car2U_dist);
-        
+
         if (car2U_dist < u_radius_)
         {
             // ROS_WARN("U Reached !");
@@ -463,7 +484,7 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
         {
             if (u_flag_)
             {
-                ROS_INFO_ONCE("U OK!");
+                ROS_WARN_ONCE("U OK!");
             }
             u_flag_ = false;
         }
@@ -480,27 +501,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 {
     geometry_msgs::Pose carPose = odom.pose.pose;
     geometry_msgs::Twist carVel = odom.twist.twist;
-    if (now_speed_ <= 5210)
-    {
-        Lfw = goalRadius = getL1Distance(1.30);
-    }
-    else if (now_speed_ <= 5230 && now_speed_ > 5210)
-    {
-        Lfw = goalRadius = getL1Distance(1.40);
-    }
-    else if (now_speed_ <= 5250 && now_speed_ > 5230)
-    {
-        Lfw = goalRadius = getL1Distance(1.50);
-    }
-    else if (now_speed_ <= 5280 && now_speed_ > 5250)
-    {
-        Lfw = goalRadius = getL1Distance(1.60);
-    }
-    else if (now_speed_ > 5280)
-    {
-        Lfw = goalRadius = getL1Distance(2.0);
-    }
-    // Lfw = goalRadius = getL1Distance(carVel.linear.x);
+    Lfw = goalRadius = getL1Distance(carVel.linear.x);
     cmd_vel.linear.x = 5000;
     cmd_vel.angular.z = baseAngle;
 
@@ -604,6 +605,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 }
 
 void Command();
+char SetValueCmd();
 char command = '0';
 
 /*****************/
@@ -630,8 +632,7 @@ int main(int argc, char **argv)
             command = '0';
             break;
         case '3':
-            //TODO change value
-
+            controller.SetValue(SetValueCmd());
             command = '0';
             break;
         case 27:
@@ -653,15 +654,30 @@ void Command()
 {
     while (command != 27)
     {
-        std::cout << "**************************************" << std::endl;
-        std::cout << "*********please send a command********" << std::endl;
-        std::cout << "> " << std::endl;
-        std::cout << "1: GO" << std::endl;
-        std::cout << "2: ReStart" << std::endl;
-        std::cout << "3: Set [Param]" << std::endl;
-        std::cout << "esc: exit program" << std::endl;
-        std::cout << "**************************************" << std::endl;
-
-        std::cin >> command;
+        if (command == '0')
+        {
+            std::cout << "**************************************" << std::endl;
+            std::cout << "*********please send a command********" << std::endl;
+            std::cout << "> " << std::endl;
+            std::cout << "1: GO" << std::endl;
+            std::cout << "2: ReStart" << std::endl;
+            std::cout << "3: Set [Param]" << std::endl;
+            std::cout << "esc: exit program" << std::endl;
+            std::cout << "**************************************" << std::endl;
+            std::cin >> command;
+        }
     }
+}
+
+char SetValueCmd()
+{
+    char value = 27;
+    std::cout << "************IN Set [Param]***********" << std::endl;
+    std::cout << "> " << std::endl;
+    std::cout << "1:distance + 0.05" << std::endl;
+    std::cout << "2:distance - 0.05" << std::endl;
+    std::cout << "**************************************" << std::endl;
+
+    std::cin >> value;
+    return value;
 }

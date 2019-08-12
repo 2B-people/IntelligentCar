@@ -11,12 +11,12 @@ trajectory_opt {
     allow_init_with_backwards_motion: False 
     global_plan_viapoint_sep: 1.8
     via_points_ordered: True
-    max_global_plan_lookahead_dist: 5.0
+    max_global_plan_lookahead_dist: 5.5
     exact_arc_length: True
     force_reinit_new_goal_dist: 0.65
     feasibility_check_no_poses: 5
     publish_feedback: False
-    min_samples: 3
+    min_samples: 4
     max_samples: 200
 }
 
@@ -40,7 +40,7 @@ tolerance_opt {
 }
 
 obstacles_opt {
-    min_obstacle_dist: 0.38 #0.8
+    min_obstacle_dist: 0.46 #0.8
     inflation_dist: 0
     include_costmap_obstacles: True
     costmap_obstacles_behind_robot_dist: 1.0
