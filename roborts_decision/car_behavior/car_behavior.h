@@ -30,6 +30,8 @@ public:
     chase_goal_.pose.position.y = 0;
     chase_goal_.pose.position.z = 0;
 
+    loop_ = 0;
+
     ros_rviz_sub_ = ros_nh_.subscribe("/move_base_simple/goal", 1, &CarBehavior::RvizGoalCB, this);
 
     cancel_goal_ = false;
@@ -46,6 +48,17 @@ public:
         chassis_executor_->Execute(chase_goal_);
         cancel_goal_ = false;
         return;
+      }
+    }
+    else
+    {
+      loop_++;
+      if (loop_ == 10)
+      {
+        chassis_executor_->Cancel();
+        chase_goal_.header.stamp = ros::Time::now();
+        chassis_executor_->Execute(chase_goal_);
+        loop_ = 0;
       }
     }
   }
@@ -97,6 +110,7 @@ private:
 
   //! cancel flag
   bool cancel_goal_;
+  int loop_;
 };
 
 } // namespace roborts_decision

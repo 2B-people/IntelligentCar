@@ -41,8 +41,10 @@ class L1Controller
 public:
     L1Controller();
     void initMarker();
+    
     bool isForwardWayPt(const geometry_msgs::Point &wayPt, const geometry_msgs::Pose &carPose);
     bool isWayPtAwayFromLfwDist(const geometry_msgs::Point &wayPt, const geometry_msgs::Point &car_pos);
+    
     double getYawFromPose(const geometry_msgs::Pose &carPose);
     double getEta(const geometry_msgs::Pose &carPose);
     double getCar2GoalDist();
@@ -50,9 +52,11 @@ public:
     double getL1Distance(const double &_Vcmd);
     double getSteeringAngle(double eta);
     double getGasInput(const float &current_v);
+
     void ReStart();
     void GoCar();
     void SetValue(const char key);
+
     geometry_msgs::Point get_odom_car2WayPtVec(const geometry_msgs::Pose &carPose);
 
 private:
@@ -69,8 +73,6 @@ private:
     nav_msgs::Odometry odom;
     nav_msgs::Path map_path, odom_path;
 
-    PID pid_;
-
     //not use
     // int start_loop_, loop_;
     // double start_speed_;
@@ -80,13 +82,15 @@ private:
     double u_radius_;
     int controller_freq;
     int now_speed_;
-
+    
+    PID pid_;
     double distance_kp_;
     double kp_, ki_, kd_;
 
-    // int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
-    double set_speed_u_, set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
+    double set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
     double max_speed_;
+
+    int max_pwm_, min_pwm_;
     bool foundForwardPt, goal_received, goal_reached;
     bool go_, u_flag_;
 
@@ -117,27 +121,22 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
+
+    // ESC
+    pn.param("max_pwm_", max_pwm_, 5260);
+    pn.param("min_pwm_", min_pwm_, 4900);
+
+    // Servo
     pn.param("AngleGain", Angle_gain, -1.0);
-    pn.param("MaxSpeed", max_speed_, 200.0);
     pn.param("baseAngle", baseAngle, 90.0);
 
-    // pn.param("pace_gain_u", pace_gain_u_, -4);
-    // pn.param("pace_gain_1_", pace_gain_1_, -5);
-    // pn.param("pace_gain_2_", pace_gain_2_, -6);
-    // pn.param("pace_gain_3_", pace_gain_3_, -8);
-    // pn.param("pace_gain_4_", pace_gain_4_, -9);
-    // pn.param("pace_gain_add_", pace_gain_add_, 6);
-
+    // Car Speed
+    pn.param("MaxSpeed", max_speed_, 200.0);
     pn.param("set_speed_1_", set_speed_1_, 180.0);
     pn.param("set_speed_2_", set_speed_2_, 170.0);
     pn.param("set_speed_3_", set_speed_3_, 150.0);
     pn.param("set_speed_4_", set_speed_4_, 100.0);
-    pn.param("set_speed_u_", set_speed_u_, 100.0);
 
-    //start
-    // pn.param("startSpeed", start_speed_, 5100.0);
-    // pn.param("startLoop", start_loop_, 60);
-    // loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
     pn.param("u_radius_", u_radius_, 3.0);
@@ -152,10 +151,10 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
     go_ = false;
     u_flag_ = false;
 
+    // Pid param
     pn.param("kp", kp_, 4.0);
     pn.param("ki", ki_, 0.0);
     pn.param("kd", kd_, 0.0);
-
     pid_.resetPid(kp_, ki_, kd_);
 
     //Publishers and Subscribers
@@ -541,53 +540,46 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     steering_angle = -steering_angle;
                 }
 
-                if (u_flag_)
+                if (steering_angle > 10.0 && steering_angle < 20.0)
                 {
-                    set_speed_cm = set_speed_u_;
+                    set_speed_cm = set_speed_1_;
+                }
+                else if (steering_angle > 20.0 && steering_angle < 30.0)
+                {
+                    set_speed_cm = set_speed_2_;
+                }
+                else if (steering_angle > 30.0 && steering_angle < 40.0)
+                {
+                    set_speed_cm = set_speed_3_;
+                }
+                else if (steering_angle > 40.0)
+                {
+                    set_speed_cm = set_speed_4_;
                 }
                 else
                 {
-                    if (steering_angle > 10.0 && steering_angle < 20.0)
-                    {
-                        set_speed_cm = set_speed_1_;
-                    }
-                    else if (steering_angle > 20.0 && steering_angle < 30.0)
-                    {
-                        set_speed_cm = set_speed_2_;
-                    }
-                    else if (steering_angle > 30.0 && steering_angle < 40.0)
-                    {
-                        set_speed_cm = set_speed_3_;
-                    }
-                    else if (steering_angle > 40.0)
-                    {
-                        set_speed_cm = set_speed_4_;
-                    }
-                    else
-                    {
-                        set_speed_cm = max_speed_;
-                    }
+                    set_speed_cm = max_speed_;
                 }
 
                 double pid_out = pid_.calcPid(set_speed_cm, carVel.linear.x * 100);
-                
-                ROS_INFO("***************************");
-                ROS_INFO("set_speed_cm:%.2f",set_speed_cm);
-                ROS_INFO("carVel.linear.x:%f",carVel.linear.x);
-                ROS_INFO("pid_out:%.2f",pid_out);
+
                 now_speed_ = now_speed_ + (int)pid_out;
 
-                if (now_speed_ >= 5240)
+                if (now_speed_ >= max_pwm_)
                 {
-                    now_speed_ = 5240;
+                    now_speed_ = max_pwm_;
                 }
-                else if (now_speed_ <= 5000)
+                else if (now_speed_ <= min_pwm_)
                 {
-                    now_speed_ = 5000;
+                    now_speed_ = min_pwm_;
                 }
 
                 cmd_vel.linear.x = now_speed_;
 
+                ROS_INFO("***************************");
+                ROS_INFO("set_speed_cm:%.2f", set_speed_cm);
+                ROS_INFO("carVel.linear.x:%f", carVel.linear.x * 100);
+                ROS_INFO("pid_out:%.2f", pid_out);
                 ROS_INFO("Gas = %.2f......angular = %.2f\n steering_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, steering_angle);
             }
         }
