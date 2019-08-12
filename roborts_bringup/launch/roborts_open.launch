@@ -1,7 +1,7 @@
 <launch>
   <master auto="start"/>
-  <!-- <arg name="map" value="map"/> -->
-  <arg name="map" value="214_8_1"/>
+  <arg name="map" value="map"/>
+  <!-- <arg name="map" value="214_8_1"/> -->
 
   <!-- <include file="$(find roborts_bringup)/launch/base.launch" /> -->
 
@@ -43,21 +43,21 @@
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
     <param name="distance_kp_" value="2.38" />
-    <param name="controller_freq" value="15"/>
+    <param name="controller_freq" value="20"/>
 
     <!-- ESC -->
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="200.0"/>
-    <param name="set_speed_1_" value="180"/>
-    <param name="set_speed_2_" value="150"/>
-    <param name="set_speed_3_" value="100"/>
-    <param name="set_speed_4_" value="100"/>
-    <param name="set_speed_u_" value="100"/>
+    <param name="MaxSpeed" value="260.0"/>
+    <param name="set_speed_1_" value="160.0"/>
+    <param name="set_speed_2_" value="135.0"/>
+    <param name="set_speed_3_" value="100.0"/>
+    <param name="set_speed_4_" value="90.0"/>
+    <!-- <param name="set_speed_u_" value="120.0"/> -->
 
     <!-- Pid -->
-    <param name="kp" value="6.0"/>
+    <param name="kp" value="0.25"/>
     <param name="ki" value="0.0"/>
-    <param name="kd" value="5.0"/>
+    <param name="kd" value="0.35"/>
 
     <!-- <param name="pace_gain_u" value="-10"/>
     <param name="pace_gain_1_" value="-5"/>
@@ -69,7 +69,7 @@
     <!-- Servo -->
     <param name="baseAngle" value="90.0"/>
     <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
-    <param name="AngleGain" value="-3.2"/>
+    <param name="AngleGain" value="-3.5"/>
     <!-- for tt02: >0, for hsp: <0 -->
 
     <!-- Topic -->

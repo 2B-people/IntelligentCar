@@ -301,7 +301,7 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
         ROS_WARN("IN HARE");
         geometry_msgs::PointStamped odom_point;
         ros::Time now = ros::Time::now();
-        odom_point.header.stamp = ros::Time::now();
+        // odom_point.header.stamp = ros::Time::now();
         tf_listener.waitForTransform("map", "odom", now, ros::Duration(2.0));
         tf_listener.transformPoint("odom", *pointMsg, odom_point);
         u_odom_pos_ = odom_point.point;
@@ -489,20 +489,20 @@ void L1Controller::goalReachingCB(const ros::TimerEvent &)
     if (goal_received && go_)
     {
         double car2goal_dist = getCar2GoalDist();
-        double car2U_dist = getCar2UDist();
+        // double car2U_dist = getCar2UDist();
 
-        if (car2U_dist < u_radius_)
-        {
-            ROS_WARN("car2U_dist:%.2f", car2U_dist);
+        // if (car2U_dist < u_radius_)
+        // {
+        //     ROS_WARN("car2U_dist:%.2f", car2U_dist);
 
-            u_flag_ = true;
-        }
-        else
-        {
-            ROS_INFO("car2U_dist:%.2f", car2U_dist);
+        //     u_flag_ = true;
+        // }
+        // else
+        // {
+        //     ROS_INFO("car2U_dist:%.2f", car2U_dist);
 
-            u_flag_ = false;
-        }
+        //     u_flag_ = false;
+        // }
 
         if (car2goal_dist < goalRadius)
         {
@@ -577,13 +577,13 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 ROS_INFO("pid_out:%.2f",pid_out);
                 now_speed_ = now_speed_ + (int)pid_out;
 
-                if (now_speed_ >= 5300)
+                if (now_speed_ >= 5240)
                 {
-                    now_speed_ = 5300;
+                    now_speed_ = 5240;
                 }
-                else if (now_speed_ <= 5050)
+                else if (now_speed_ <= 5000)
                 {
-                    now_speed_ = 5050;
+                    now_speed_ = 5000;
                 }
 
                 cmd_vel.linear.x = now_speed_;
