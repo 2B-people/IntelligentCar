@@ -29,6 +29,8 @@ along with hypha_racecar.  If not, see <http://www.gnu.org/licenses/>.
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 
+#include <pid.h>
+
 #define PI 3.14159265358979
 
 /********************/
@@ -67,18 +69,25 @@ private:
     nav_msgs::Odometry odom;
     nav_msgs::Path map_path, odom_path;
 
+    PID pid_;
+
+    //not use
+    // int start_loop_, loop_;
+    // double start_speed_;
+
     double L, Lfw, Lrv, Vcmd, lfw, lrv, steering, u, v;
     double Gas_gain, baseAngle, Angle_gain, goalRadius;
     double u_radius_;
     int controller_freq, max_speed_;
     int now_speed_;
-    int start_loop_, loop_;
-    double start_speed_;
-    bool foundForwardPt, goal_received, goal_reached;
-    bool go_, u_flag_;
+
+    double kp_,ki_,kd_;
 
     int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
     int min_speed_u_, min_speed_1_, min_speed_2_, min_speed_3_, min_speed_4_;
+
+    bool foundForwardPt, goal_received, goal_reached;
+    bool go_, u_flag_;
 
     void odomCB(const nav_msgs::Odometry::ConstPtr &odomMsg);
     void pathCB(const nav_msgs::Path::ConstPtr &pathMsg);
@@ -89,7 +98,7 @@ private:
 
 }; // end of class
 
-L1Controller::L1Controller()
+L1Controller::L1Controller():pid_(POSITON_PID,0.0,0.0,0.0,100,0,0,0);
 {
     //Private parameters handler
     ros::NodeHandle pn("~");
@@ -125,9 +134,9 @@ L1Controller::L1Controller()
     pn.param("min_speed_u_", min_speed_u_, 5160);
 
     //start
-    pn.param("startSpeed", start_speed_, 5100.0);
-    pn.param("startLoop", start_loop_, 60);
-    loop_ = 0;
+    // pn.param("startSpeed", start_speed_, 5100.0);
+    // pn.param("startLoop", start_loop_, 60);
+    // loop_ = 0;
     //Init variables
     Lfw = goalRadius = getL1Distance(Vcmd);
     u_radius_ = 2.5;
@@ -140,6 +149,12 @@ L1Controller::L1Controller()
     goal_reached = false;
     go_ = false;
     u_flag_ = false;
+
+    pn.param("kp", kp_, 1.0);
+    pn.param("ki", ki_, 0.0);
+    pn.param("kd", kd_, 0.0);
+
+    pid_.resetPid(kp_,ki_,kd_);
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
