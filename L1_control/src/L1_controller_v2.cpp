@@ -78,15 +78,15 @@ private:
     double L, Lfw, Lrv, Vcmd, lfw, lrv, steering, u, v;
     double Gas_gain, baseAngle, Angle_gain, goalRadius;
     double u_radius_;
-    int controller_freq, max_speed_;
+    int controller_freq;
     int now_speed_;
 
     double distance_kp_;
     double kp_, ki_, kd_;
 
-    int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
-    int set_speed_u_, set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
-
+    // int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
+    double set_speed_u_, set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
+    double max_speed_;
     bool foundForwardPt, goal_received, goal_reached;
     bool go_, u_flag_;
 
@@ -113,12 +113,12 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
     pn.param("L", L, 0.26);
     pn.param("Vcmd", Vcmd, 1.0);
     pn.param("lfw", lfw, 0.13);
-    pn.param("distance_kp_", distance_kp_, 2.4);
+    pn.param("distance_kp_", distance_kp_, 2.38);
 
     //Controller parameter
     pn.param("controller_freq", controller_freq, 20);
     pn.param("AngleGain", Angle_gain, -1.0);
-    pn.param("MaxSpeed", max_speed_, 200);
+    pn.param("MaxSpeed", max_speed_, 200.0);
     pn.param("baseAngle", baseAngle, 90.0);
 
     // pn.param("pace_gain_u", pace_gain_u_, -4);
@@ -128,11 +128,11 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
     // pn.param("pace_gain_4_", pace_gain_4_, -9);
     // pn.param("pace_gain_add_", pace_gain_add_, 6);
 
-    pn.param("set_speed_1_", set_speed_1_, 180);
-    pn.param("set_speed_2_", set_speed_2_, 170);
-    pn.param("set_speed_3_", set_speed_3_, 150);
-    pn.param("set_speed_4_", set_speed_4_, 100);
-    pn.param("set_speed_u_", set_speed_u_, 100);
+    pn.param("set_speed_1_", set_speed_1_, 180.0);
+    pn.param("set_speed_2_", set_speed_2_, 170.0);
+    pn.param("set_speed_3_", set_speed_3_, 150.0);
+    pn.param("set_speed_4_", set_speed_4_, 100.0);
+    pn.param("set_speed_u_", set_speed_u_, 100.0);
 
     //start
     // pn.param("startSpeed", start_speed_, 5100.0);
@@ -152,7 +152,7 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
     go_ = false;
     u_flag_ = false;
 
-    pn.param("kp", kp_, 1.0);
+    pn.param("kp", kp_, 4.0);
     pn.param("ki", ki_, 0.0);
     pn.param("kd", kd_, 0.0);
 
@@ -533,24 +533,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
-                int pace_gain = 0;
                 double set_speed_cm = 0.0;
-                // 加上编码器里程计,不需要启动减速
-                // if (loop_++ < start_loop_)
-                // {
-                //     if (start_speed_ < max_speed_)
-                //     {
-                //         start_speed_ = start_speed_ + 3;
-                //         now_speed_ = start_speed_;
-                //     }
-                //     else
-                //     {
-                //         loop_ = start_loop_;
-                //     }
-                // }
-                // else
-                // double u = getGasInput(carVel.linear.x);
-                // cmd_vel.linear.x = max_speed_ - u;
 
                 //abs steering_angle;
                 if (steering_angle < 0.0)
@@ -587,17 +570,20 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 }
 
                 double pid_out = pid_.calcPid(set_speed_cm, carVel.linear.x * 100);
-
-                pid_out = pid_out / 4.0;
+                
+                ROS_INFO("***************************");
+                ROS_INFO("set_speed_cm:%.2f",set_speed_cm);
+                ROS_INFO("carVel.linear.x:%f",carVel.linear.x);
+                ROS_INFO("pid_out:%.2f",pid_out);
                 now_speed_ = now_speed_ + (int)pid_out;
 
-                if (now_speed_ >= 5260)
+                if (now_speed_ >= 5300)
                 {
-                    now_speed_ = 5260;
+                    now_speed_ = 5300;
                 }
-                else if (now_speed_ <= 5150)
+                else if (now_speed_ <= 5050)
                 {
-                    now_speed_ = 5150;
+                    now_speed_ = 5050;
                 }
 
                 cmd_vel.linear.x = now_speed_;
