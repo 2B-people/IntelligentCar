@@ -80,16 +80,11 @@ private:
     double u_radius_;
     int controller_freq, max_speed_;
     int now_speed_;
-<<<<<<< HEAD
-
-    double kp_,ki_,kd_;
-=======
     int start_loop_, loop_;
     double start_speed_;
     double distance_kp_;
     bool foundForwardPt, goal_received, goal_reached;
     bool go_, u_flag_;
->>>>>>> 733b21adf9d8d3277d8a8054cdee7ec99da162ef
 
     int pace_gain_u_, pace_gain_1_, pace_gain_2_, pace_gain_3_, pace_gain_4_, pace_gain_add_;
     int min_speed_u_, min_speed_1_, min_speed_2_, min_speed_3_, min_speed_4_;
