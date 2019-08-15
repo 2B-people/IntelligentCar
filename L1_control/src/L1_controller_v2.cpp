@@ -83,9 +83,12 @@ private:
     int controller_freq;
     int now_speed_;
 
-    PID pid_;
+    PID pid_speed_;
     double distance_kp_;
     double kp_, ki_, kd_;
+
+    PID pid_turn_;
+    double t_kp_, t_ki_, t_kd_;
 
     double set_speed_1_, set_speed_2_, set_speed_3_, set_speed_4_;
     double max_speed_;
@@ -103,7 +106,7 @@ private:
 
 }; // end of class
 
-L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
+L1Controller::L1Controller() : pid_speed_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0), pid_turn_(POSITON_PID, 0.0, 0.0, 0.0, 300, 0, 0, 0)
 {
     //Private parameters handler
     ros::NodeHandle pn("~");
@@ -155,7 +158,12 @@ L1Controller::L1Controller() : pid_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0, 0)
     pn.param("kp", kp_, 4.0);
     pn.param("ki", ki_, 0.0);
     pn.param("kd", kd_, 0.0);
-    pid_.resetPid(kp_, ki_, kd_);
+    pid_speed_.resetPid(kp_, ki_, kd_);
+
+    pn.param("t_kp_", t_kp_, 2.0);
+    pn.param("t_ki_", t_ki_, 0.0);
+    pn.param("t_kd_", t_kd_, 0.0);
+    pid_turn_.resetPid(t_kp_, t_ki_, t_kd_);
 
     //Publishers and Subscribers
     odom_sub = n_.subscribe("/odometry/filtered", 1, &L1Controller::odomCB, this);
@@ -208,8 +216,8 @@ void L1Controller::ReStart()
     // start_speed_ = 5100;
     // loop_ = 0;
 
-    goal_reached = true;
-    goal_received = false;
+    // goal_reached = true;
+    // goal_received = false;
     go_ = false;
 
     Lfw = goalRadius = getL1Distance(Vcmd);
@@ -460,8 +468,10 @@ double L1Controller::getCar2UDist()
 double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
+    if (_Vcmd < 0.5)
+        L1 = 0.6;
     if (_Vcmd < 1.34)
-        L1 = 3 / 3.6;
+        L1 = 3 / 3.4;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
         L1 = _Vcmd * distance_kp_ / 3.0;
     else
@@ -521,26 +531,33 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
     if (goal_received && go_)
     {
         /*Estimate Steering Angle*/
-        Lfw = goalRadius = getL1Distance(carVel.linear.x * 1.1);
+        Lfw = goalRadius = getL1Distance(carVel.linear.x * 1.2);
         double eta = getEta(carPose);
         double judge_angle = getSteeringAngle(eta) * Angle_gain;
 
         Lfw = goalRadius = getL1Distance(carVel.linear.x);
         eta = getEta(carPose);
-        double steer_angle = getSteeringAngle(eta) * Angle_gain;
+        double steer_angle1 = getSteeringAngle(eta) * Angle_gain;
+        double steer_angle = pid_turn_.calcPid(eta, 0.0);
+
+        ROS_WARN("steer_angle: %.2f",steer_angle1);
+        ROS_WARN("pid_out: %.2f",steer_angle);
+
 
         if (foundForwardPt)
         {
             cmd_vel.angular.z = baseAngle + steer_angle;
-            if (carVel.linear.x < 1.0)
-            {
-                cmd_vel.angular.z = baseAngle + steer_angle * 1.08;
-            }
+            // if (carVel.linear.x < 1.0)
+            // {
+            //     cmd_vel.angular.z = baseAngle + steer_angle * 2.0;
+            // }
 
             /*Estimate Gas Input*/
             if (!goal_reached)
             {
                 double set_speed_cm = 0.0;
+                int min_speed_pwm = min_pwm_;
+                int max_speed_pwm = max_pwm_;
 
                 //abs judge_angle;
                 if (judge_angle < 0.0)
@@ -548,50 +565,51 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     judge_angle = -judge_angle;
                 }
 
-                if (judge_angle > 10.0 && judge_angle < 20.0)
+                if (judge_angle > 5.0 && judge_angle < 15.0)
                 {
                     set_speed_cm = set_speed_1_;
+                    max_speed_pwm = max_pwm_ - 15;
                 }
-                else if (judge_angle > 20.0 && judge_angle < 30.0)
+                else if (judge_angle > 15.0 && judge_angle < 25.0)
                 {
                     set_speed_cm = set_speed_2_;
+                    max_speed_pwm = max_pwm_ - 20;
                 }
-                else if (judge_angle > 30.0 && judge_angle < 40.0)
+                else if (judge_angle > 25.0 && judge_angle < 35.0)
                 {
                     set_speed_cm = set_speed_3_;
+                    max_speed_pwm = max_pwm_ - 40;
                 }
-                else if (judge_angle > 40.0)
+                else if (judge_angle > 35.0)
                 {
                     set_speed_cm = set_speed_4_;
+                    max_speed_pwm = max_pwm_ - 70;
+                    min_speed_pwm = min_pwm_ - 100;
                 }
                 else
                 {
                     set_speed_cm = max_speed_;
                 }
 
-                double pid_out = pid_.calcPid(set_speed_cm, carVel.linear.x * 100);
+                double pid_speed_out = pid_speed_.calcPid(set_speed_cm, carVel.linear.x * 100);
 
-                if (judge_angle > 40.0)
-                {
-                    pid_out = pid_out * 1.1;
-                }
-                now_speed_ = now_speed_ + (int)pid_out;
+                now_speed_ = now_speed_ + (int)pid_speed_out;
 
-                if (now_speed_ >= max_pwm_)
+                if (now_speed_ >= max_speed_pwm)
                 {
-                    now_speed_ = max_pwm_;
+                    now_speed_ = max_speed_pwm;
                 }
-                else if (now_speed_ <= min_pwm_)
+                else if (now_speed_ <= min_speed_pwm)
                 {
-                    now_speed_ = min_pwm_;
+                    now_speed_ = min_speed_pwm;
                 }
 
                 cmd_vel.linear.x = now_speed_;
 
                 ROS_INFO("***************************");
-                ROS_INFO("set_speed_cm:%.2f", set_speed_cm);
-                ROS_INFO("carVel.linear.x:%f", carVel.linear.x * 100);
-                ROS_INFO("pid_out:%.2f", pid_out);
+                ROS_WARN("set_speed_cm:%.2f", set_speed_cm);
+                ROS_WARN("carVel.linear.x:%f", carVel.linear.x * 100);
+                ROS_INFO("pid_speed_out:%.2f", pid_speed_out);
                 ROS_INFO("Gas = %.2f......angular = %.2f\n judge_angle is %.2f\n ******************************\n ", cmd_vel.linear.x, cmd_vel.angular.z, judge_angle);
             }
         }

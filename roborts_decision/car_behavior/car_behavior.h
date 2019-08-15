@@ -50,30 +50,30 @@ public:
         cancel_goal_ = false;
         return;
       }
-      // else
-      // {
-      //   loop_++;
-      //   ROS_WARN("IN HERE");
-      //   if (loop_ == 100)
-      //   {
-      //     chassis_executor_->Cancel();
-      //     chase_goal_.header.stamp = ros::Time::now();
-      //     chassis_executor_->Execute(chase_goal_);
-      //     loop_ = 0;
-      //   }
-      // }
+      else
+      {
+        loop_++;
+        ROS_WARN("IN HERE");
+        if (loop_ == 300)
+        {
+          chassis_executor_->Cancel();
+          chase_goal_.header.stamp = ros::Time::now();
+          chassis_executor_->Execute(chase_goal_);
+          loop_ = 0;
+        }
+      }
     }
     else
     {
-      // loop_++;
-      // if (loop_ == 100)
-      // {
-      //   ROS_WARN("IN HERE");
-      //   chassis_executor_->Cancel();
-      //   chase_goal_.header.stamp = ros::Time::now();
-      //   chassis_executor_->Execute(chase_goal_);
-      //   loop_ = 0;
-      // }
+      loop_++;
+      if (loop_ == 300)
+      {
+        ROS_WARN("IN HERE");
+        chassis_executor_->Cancel();
+        chase_goal_.header.stamp = ros::Time::now();
+        chassis_executor_->Execute(chase_goal_);
+        loop_ = 0;
+      }
     }
   }
 
