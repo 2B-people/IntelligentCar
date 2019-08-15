@@ -42,7 +42,7 @@
   <node pkg="hypha_racecar" type="L1_controller_v2" name="L1_controller_v2" respawn="false" output="screen">
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
-    <param name="distance_kp_" value="2.3" />
+    <param name="distance_kp_" value="2.31" />
     <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
