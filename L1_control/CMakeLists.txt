@@ -32,10 +32,13 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  src/pid.h
 )
 
 
 add_executable(L1_controller_v2 src/L1_controller_v2.cpp src/pid.cpp )
 target_link_libraries(L1_controller_v2 ${catkin_LIBRARIES})
 add_dependencies(L1_controller_v2 hypha_racecar_generate_messages_cpp)
+
+add_executable(L1_controller_v3 src/L1_controller_v3.cpp src/pid.cpp )
+target_link_libraries(L1_controller_v3 ${catkin_LIBRARIES})
+add_dependencies(L1_controller_v3 hypha_racecar_generate_messages_cpp)
