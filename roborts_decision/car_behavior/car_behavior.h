@@ -40,7 +40,6 @@ public:
   {
     auto executor_state = Update();
     // auto robot_map_pose = blackboard_->GetRobotMapPose();
-    ROS_WARN("IN HERE");
     if (executor_state != BehaviorState::RUNNING)
     {
       if (cancel_goal_)
@@ -53,7 +52,6 @@ public:
       else
       {
         loop_++;
-        ROS_WARN("IN HERE");
         if (loop_ == 300)
         {
           chassis_executor_->Cancel();
@@ -68,7 +66,6 @@ public:
       loop_++;
       if (loop_ == 300)
       {
-        ROS_WARN("IN HERE");
         chassis_executor_->Cancel();
         chase_goal_.header.stamp = ros::Time::now();
         chassis_executor_->Execute(chase_goal_);

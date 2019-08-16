@@ -1,16 +1,12 @@
 <launch>
   <master auto="start"/>
-  <rosparam command="load" file="$(find roborts_base)/config/roborts_base_parameter.yaml" />
-
-  <!-- <include file="$(find roborts_bringup)/launch/include /art_car_tf.launch.xml" /> -->
   
   <!-- Publish static tf -->
   <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
 
   <!-- Run the Base Node -->
-  <!-- <node pkg="roborts_base" type="roborts_base_node" name="roborts_base_node" respawn="false" /> -->
-  <!-- <node pkg="art_driver" type="art_driver_node" name="art_driver_node" output="screen"/> -->
   <node pkg="car_driver" type="car_driver" name="car_driver" />
+
   <!-- Run the lidar node -->
   <include file="$(find roborts_bringup)/launch/include/ls01g.launch"/>
 
