@@ -4,11 +4,15 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/tf.h>
 
+#include <thread>
+
 #define PI 3.1415956
 
 unsigned char r_buffer[20]; //接收缓存
 
 serial::Serial ser;
+
+double ki = 0.5;
 
 ros::Publisher odom_enc_pub;
 
@@ -69,7 +73,9 @@ void publishOdometry(int16_t left, int16_t right)
     net_vel = 0.5 * (left_vel + right_vel);
     diff_vel = right_vel - left_vel;
 
-    alpha = odom_angular_coef_ * diff_vel * odom_traction_factor_;
+    alpha = odom_angular_coef_ * diff_vel * odom_traction_factor_ * ki;
+    // alpha = diff_vel * ki;
+    ROS_WARN("alpha: %.2f", alpha);
 
     pos_x = pos_x + net_vel * cos(theta) * dt;
     pos_y = pos_y + net_vel * sin(theta) * dt;
@@ -186,9 +192,9 @@ uint8_t one_byte_callBack(uint8_t rx_dat)
         int16_t right = (int16_t)(rebuf[2] << 8 | rebuf[1]);
         int16_t left = (int16_t)(rebuf[4] << 8 | rebuf[3]);
         publishOdometry(right, left);
-        ROS_INFO("----------------");
-        ROS_INFO("right %d", right);
-        ROS_INFO("left %d", left);
+        // ROS_INFO("----------------");
+        // ROS_INFO("right %d", right);
+        // ROS_INFO("left %d", left);
         i = 0;
         return 1;
       }
@@ -198,14 +204,21 @@ uint8_t one_byte_callBack(uint8_t rx_dat)
   i++;
 }
 
+void Command();
+char command = '0';
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "car_driver");
   ros::NodeHandle nh;
+  ros::NodeHandle pn("~");
+
+  auto command_thread = std::thread(Command);
 
   odom_enc_pub = nh.advertise<nav_msgs::Odometry>("odom_encoder", 1);
   ros::Subscriber sub = nh.subscribe("/car/cmd_vel", 1, TwistCallback);
   // timer1 = nh_.createTimer(ros::Duration((1.0)/), &L1Controller::controlLoopCB, this); // Duration(0.05) -> 20Hz
+  pn.param("ki", ki, -1.0);
 
   odom_angular_coef_ = ODOM_ANGULAR_COEF_2WD;
   odom_traction_factor_ = ODOM_TRACTION_FACTOR_2WD;
@@ -248,7 +261,40 @@ int main(int argc, char **argv)
         ROS_WARN("encoder data analysis failed, data has losed");
       }
     }
+
+    switch (command)
+    {
+    case '1':
+      ki = ki + 0.1;
+      ROS_WARN("KI change :%.2f", ki);
+      command = '0';
+      break;
+    case '2':
+      ki = ki - 0.1;
+      ROS_WARN("KI change :%.2f", ki);
+      command = '0';
+      break;
+    default:
+      break;
+    }
+
     ros::spinOnce();
     //loop_rate.sleep();
+  }
+}
+
+void Command()
+{
+  while (command != 27)
+  {
+    if (command == '0')
+    {
+      std::cout << "************IN Set [Param]***********" << std::endl;
+      std::cout << "> " << std::endl;
+      std::cout << "1:distance + 0.05" << std::endl;
+      std::cout << "2:distance - 0.05" << std::endl;
+      std::cout << "**************************************" << std::endl;
+      std::cin >> command;
+    }
   }
 }

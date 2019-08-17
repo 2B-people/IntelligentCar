@@ -5,7 +5,9 @@
   <include file="$(find roborts_bringup)/launch/include/static_tf.launch" />
 
   <!-- Run the Base Node -->
-  <node pkg="car_driver" type="car_driver" name="car_driver" />
+  <node pkg="car_driver" type="car_driver" name="car_driver">
+    <param name="ki" value="-100.0" />
+  </node>
 
   <!-- Run the lidar node -->
   <include file="$(find roborts_bringup)/launch/include/ls01g.launch"/>

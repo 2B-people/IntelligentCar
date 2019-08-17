@@ -578,12 +578,12 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 else if (judge_angle > 25.0 && judge_angle < 35.0)
                 {
                     set_speed_cm = set_speed_3_;
-                    max_speed_pwm = max_pwm_ - 40;
+                    max_speed_pwm = max_pwm_ - 30;
                 }
                 else if (judge_angle > 35.0)
                 {
                     set_speed_cm = set_speed_4_;
-                    max_speed_pwm = max_pwm_ - 70;
+                    max_speed_pwm = 5170;
                     min_speed_pwm = min_pwm_ - 100;
                 }
                 else

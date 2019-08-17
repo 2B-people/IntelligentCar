@@ -42,32 +42,33 @@
   <node pkg="hypha_racecar" type="L1_controller_v3" name="L1_controller_v3" respawn="false" output="screen">
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
-    <param name="distance_kp_" value="2.2" />
-    <param name="controller_freq" value="50"/>
+    <param name="distance_kp_" value="2.1" />
+    <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
-    <param name="max_pwm_" value="5285"/>
-    <param name="min_pwm_" value="4900"/>
+    <param name="max_pwm_" value="5280"/>
+    <param name="min_pwm_" value="4930"/>
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="270.0"/>
-    <param name="set_speed_1_" value="230.0"/>
-    <param name="set_speed_2_" value="220.0"/>
-    <param name="set_speed_3_" value="160.0"/>
-    <param name="set_speed_4_" value="100.0"/>
+    <param name="MaxSpeed" value="275.0"/>
+    <param name="set_speed_1_" value="260.0"/>
+    <param name="set_speed_2_" value="230.0"/>
+    <param name="set_speed_3_" value="190.0"/>
+    <param name="set_speed_4_" value="180.0"/>
 
     <!-- Pid -->
-    <param name="kp" value="0.4"/>
-    <param name="ki" value="0.02"/>
-    <param name="kd" value="2.0"/>
+    <param name="kp" value="0.46"/>
+    <param name="ki" value="0.04"/>
+    <param name="kd" value="0.0"/>
 
-    <param name="t_kp_" value="100.0"/> 
+    <param name="t_kp_" value="95.0"/> 
     <param name="t_ki" value="0.0"/>      
     <param name="t_kd_" value="280.0"/> 
 
+
     <!-- Servo -->
-    <param name="baseAngle" value="90.0"/>
+    <param name="baseAngle" value="86.0"/>
     <!-- the middle pos of servo, for tt02: 97, for hsp: ? -->
-    <param name="AngleGain" value="-5.0"/>
+    <param name="AngleGain" value="-4.8"/>
     <!-- for tt02: >0, for hsp: <0 -->
 
     <!-- Topic -->
