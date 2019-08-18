@@ -94,6 +94,10 @@ void GlobalPlannerNode::GoalCallback(const roborts_msgs::GlobalPlannerGoal::Cons
   ErrorInfo error_info = GetErrorInfo();
   NodeState node_state = GetNodeState();
 
+  costmap_ptr_->ResetLayers();
+
+  ros::Duration(0.1).sleep();
+
   //Set the current goal
   SetGoal(msg->goal);
 
