@@ -45,7 +45,13 @@ public:
       if (cancel_goal_)
       {
         loop_++;
-        if (loop_ == 200)
+        static bool flag = true;
+        if (flag)
+        {
+          loop_ = 250;
+          flag = false;
+        }
+        if (loop_ == 250)
         {
           chassis_executor_->Cancel();
           chase_goal_.header.stamp = ros::Time::now();
@@ -57,7 +63,7 @@ public:
     else
     {
       loop_++;
-      if (loop_ == 200)
+      if (loop_ == 250)
       {
         chassis_executor_->Cancel();
         chase_goal_.header.stamp = ros::Time::now();

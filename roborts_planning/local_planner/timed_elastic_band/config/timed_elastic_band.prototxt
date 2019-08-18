@@ -9,15 +9,15 @@ trajectory_opt {
     dt_hysteresis: 0.1
     global_plan_overwrite_orientation: True 
     allow_init_with_backwards_motion: False 
-    global_plan_viapoint_sep: 5.0
+    global_plan_viapoint_sep: 20.0
     via_points_ordered: True
     max_global_plan_lookahead_dist: 4.5
     exact_arc_length: True
-    force_reinit_new_goal_dist: 0.65
+    force_reinit_new_goal_dist: 0.8
     feasibility_check_no_poses: 5
     publish_feedback: False
-    min_samples: 8
-    max_samples: 200
+    min_samples: 100
+    max_samples: 250
 }
 
 kinematics_opt {
@@ -25,10 +25,10 @@ kinematics_opt {
     max_vel_x_backwards: 0.0
     max_vel_y: 0.0
     max_vel_theta: 4.0
-    acc_lim_x: 0.8
+    acc_lim_x: 2.0
     acc_lim_y: 0.0
     acc_lim_theta: 1.0
-    min_turning_radius: 1.85
+    min_turning_radius: 1.7
     wheelbase: 0.48
     cmd_angle_instead_rotvel: True
 }
@@ -84,7 +84,7 @@ optimize_info {
     weight_acc_lim_theta: 1
     weight_kinematics_nh: 1000
     weight_kinematics_forward_drive: 1
-    weight_kinematics_turning_radius: 1.2
+    weight_kinematics_turning_radius: 4.0
     weight_optimaltime: 1
     weight_obstacle: 55
     weight_inflation: 0.1

@@ -485,8 +485,6 @@ double L1Controller::getCar2UDist()
 double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
-    if (_Vcmd < 0.5)
-        L1 = 0.6;
     if (_Vcmd < 1.34)
         L1 = 3 / 3.4;
     else if (_Vcmd > 1.34 && _Vcmd < 5.36)
@@ -583,28 +581,29 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 {
                     if (judge_angle > 5.0 && judge_angle < 15.0)
                     {
-                        set_speed_cm = set_speed_1_;
-                        max_speed_pwm = max_pwm_ - 15;
+                        set_speed_cm = 190;
+                        max_speed_pwm = 5290 - 50;
                     }
-                    else if (judge_angle > 15.0 && judge_angle < 25.0)
+                    else if (judge_angle > 15.0 && judge_angle < 20.0)
                     {
-                        set_speed_cm = set_speed_2_;
-                        max_speed_pwm = max_pwm_ - 25;
+                        set_speed_cm = 180;
+                        max_speed_pwm = 5290 - 60;
                     }
-                    else if (judge_angle > 25.0 && judge_angle < 35.0)
+                    else if (judge_angle > 20.0 && judge_angle < 25.0)
                     {
-                        set_speed_cm = set_speed_3_;
-                        max_speed_pwm = max_pwm_ - 70;
+                        set_speed_cm = 140;
+                        max_speed_pwm = 5290 - 70;
                     }
-                    else if (judge_angle > 35.0)
+                    else if (judge_angle > 25.0)
                     {
-                        set_speed_cm = 100;
-                        max_speed_pwm = 5180;
-                        min_speed_pwm = 4700;
+                        set_speed_cm = 95;
+                        max_speed_pwm = 5195;
+                        min_speed_pwm = 4800;
                     }
                     else
                     {
-                        set_speed_cm = max_speed_ - 10;
+                        set_speed_cm = 200;
+                        max_speed_pwm = 5290 - 50;
                     }
                 }
                 else
@@ -638,7 +637,14 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
                 // pid control speed
                 double pid_speed_out = pid_speed_.calcPid(set_speed_cm, carVel.linear.x * 100);
-                now_speed_ = now_speed_ + (int)pid_speed_out;
+                if (u_flag_)
+                {
+                    now_speed_ = now_speed_ + (int)pid_speed_out * 2.0;
+                }
+                else
+                {
+                    now_speed_ = now_speed_ + (int)pid_speed_out;
+                }
 
                 // limit speed pwm
                 if (now_speed_ >= max_speed_pwm)
@@ -650,7 +656,17 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     now_speed_ = min_speed_pwm;
                 }
 
-                cmd_vel.linear.x = now_speed_;
+
+                // 保护局部规划出错
+                if (judge_angle > 130.0)
+                {
+                    cmd_vel.linear.x = 2100;
+                }
+                else
+                {
+                    cmd_vel.linear.x = now_speed_;
+                }
+                
                 cmd_vel.angular.z = baseAngle + steer_angle;
 
                 ROS_INFO("***************************");

@@ -1,7 +1,7 @@
 <launch>
   <master auto="start"/>
-  <!-- <arg name="map" value="map"/> -->
-  <arg name="map" value="214_8_1"/>
+  <arg name="map" value="map"/>
+  <!-- <arg name="map" value="214_8_1"/> -->
 
   <!-- Run the map server -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find roborts_bringup)/maps/$(arg map).yaml" respawn="false" />
@@ -40,13 +40,13 @@
   <node pkg="hypha_racecar" type="L1_controller_v3" name="L1_controller_v3" respawn="false" output="screen">
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
-    <param name="distance_kp_" value="2.1" />
+    <param name="distance_kp_" value="1.9" />
     <param name="AngleGain" value="-4.8"/>
     <param name="speed_ctrl_" value="1.2"/> 
     <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
-    <param name="max_pwm_" value="5290"/>
+    <param name="max_pwm_" value="5285"/>
     <param name="min_pwm_" value="4950"/>
     <!-- speed of car m/s -->
     <param name="MaxSpeed" value="280.0"/>
@@ -64,15 +64,15 @@
     <!-- turn left -->
     <param name="t_kp_" value="90.0"/> 
     <param name="t_ki_" value="0.0"/>      
-    <param name="t_kd_" value="280.0"/> 
+    <param name="t_kd_" value="230.0"/> 
 
     <!-- turn right -->
-    <param name="r_kp_" value="105.0"/> 
+    <param name="r_kp_" value="95.0"/> 
     <param name="r_ki_" value="0.0"/>      
-    <param name="r_kd_" value="280.0"/> 
+    <param name="r_kd_" value="230.0"/> 
 
     <!-- Servo -->
-    <param name="u_radius_" value="4.5"/> 
+    <param name="u_radius_" value="5.0"/> 
     <param name="baseAngle" value="90.0"/>
 
     <!-- Topic -->

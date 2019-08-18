@@ -39,7 +39,7 @@ odom0: /rf2o_laser_odometry/odom
 odom0_config: [false, false, false,
                false, false, false,
                true, false, false,
-               false, false, false,
+               false, false, true,
                false, false, false]
 
 # If you have high-frequency data or are running with a low frequency parameter value, then you may want to increase
