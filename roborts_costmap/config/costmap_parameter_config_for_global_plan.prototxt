@@ -4,12 +4,12 @@ para_basic {
 }
 para_costmap_interface {
   global_frame: "map"
-  robot_base_frame: "base_footprint"
-  footprint_padding: 0.05
+  robot_base_frame: "base_link"
+  footprint_padding: 0.1
   transform_tolerance: 3.0
   distance_threshold: 1.0
-  map_width: 70.0
-  map_height: 60.0
+  map_width: 100.0
+  map_height: 100.0
   map_resolution: 0.05
   map_origin_x: 0.0
   map_origin_y: 0.0
@@ -18,23 +18,23 @@ para_costmap_interface {
   has_obstacle_layer: true
   has_static_layer: true
   inflation_file_path: "/config/inflation_layer_config.prototxt"
-  map_update_frequency: 10
+  map_update_frequency: 5
 }
 footprint {
   point {
-    x: 0.3
-    y: 0.4
+    x: 0.225
+    y: 0.175
   }
   point {
-    x: -0.3
-    y: 0.4
+    x: -0.225
+    y: 0.175
   }
   point {
-    x: 0.3
-    y: 0.4
+    x: 0.225
+    y: 0.175
   }
   point {
-    x: 0.3
-    y: -0.4
+    x: 0.225
+    y: -0.175
   }
 }

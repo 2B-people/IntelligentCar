@@ -44,43 +44,9 @@ public:
     {
       if (cancel_goal_)
       {
-        loop_++;
-        static bool local_flag = false;
-        if (!local_flag)
-        {
-          loop_ == 200;
-          local_flag = !local_flag;
-        }
-
-        if (loop_ == 200)
-        {
-          chassis_executor_->Cancel(1);
+          chassis_executor_->Cancel();
           chase_goal_.header.stamp = ros::Time::now();
           chassis_executor_->Execute(chase_goal_);
-          loop_ = 0;
-        }
-
-        if (loop_ % 20 == 0)
-        {
-          chassis_executor_->Cancel(2);
-          chassis_executor_->Execute();
-        }
-      }
-    }
-    else
-    {
-      loop_++;
-      if (loop_ == 200)
-      {
-        chassis_executor_->Cancel(1);
-        chase_goal_.header.stamp = ros::Time::now();
-        chassis_executor_->Execute(chase_goal_);
-        loop_ = 0;
-      }
-      if (loop_ % 20 == 0)
-      {
-        chassis_executor_->Cancel(2);
-        chassis_executor_->Execute();
       }
     }
   }
