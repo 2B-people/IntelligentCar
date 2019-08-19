@@ -576,63 +576,30 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 {
                     judge_angle = -judge_angle;
                 }
-
-                if (u_flag_)
+                if (judge_angle > 5.0 && judge_angle < 15.0)
                 {
-                    if (judge_angle > 5.0 && judge_angle < 15.0)
-                    {
-                        set_speed_cm = 190;
-                        max_speed_pwm = 5290 - 50;
-                    }
-                    else if (judge_angle > 15.0 && judge_angle < 20.0)
-                    {
-                        set_speed_cm = 180;
-                        max_speed_pwm = 5290 - 60;
-                    }
-                    else if (judge_angle > 20.0 && judge_angle < 25.0)
-                    {
-                        set_speed_cm = 140;
-                        max_speed_pwm = 5290 - 70;
-                    }
-                    else if (judge_angle > 25.0)
-                    {
-                        set_speed_cm = 95;
-                        max_speed_pwm = 5195;
-                        min_speed_pwm = 4800;
-                    }
-                    else
-                    {
-                        set_speed_cm = 200;
-                        max_speed_pwm = 5290 - 50;
-                    }
+                    set_speed_cm = set_speed_1_;
+                    max_speed_pwm = max_pwm_ - 10;
+                }
+                else if (judge_angle > 15.0 && judge_angle < 25.0)
+                {
+                    set_speed_cm = set_speed_2_;
+                    max_speed_pwm = max_pwm_ - 20;
+                }
+                else if (judge_angle > 25.0 && judge_angle < 35.0)
+                {
+                    set_speed_cm = set_speed_3_;
+                    max_speed_pwm = max_pwm_ - 30;
+                }
+                else if (judge_angle > 35.0)
+                {
+                    set_speed_cm = set_speed_4_;
+                    max_speed_pwm = max_pwm_ - 60;
+                    min_speed_pwm = min_pwm_ - 50;
                 }
                 else
                 {
-                    if (judge_angle > 5.0 && judge_angle < 15.0)
-                    {
-                        set_speed_cm = set_speed_1_;
-                        max_speed_pwm = max_pwm_ - 10;
-                    }
-                    else if (judge_angle > 15.0 && judge_angle < 25.0)
-                    {
-                        set_speed_cm = set_speed_2_;
-                        max_speed_pwm = max_pwm_ - 20;
-                    }
-                    else if (judge_angle > 25.0 && judge_angle < 35.0)
-                    {
-                        set_speed_cm = set_speed_3_;
-                        max_speed_pwm = max_pwm_ - 30;
-                    }
-                    else if (judge_angle > 35.0)
-                    {
-                        set_speed_cm = set_speed_4_;
-                        max_speed_pwm = max_pwm_ - 60;
-                        min_speed_pwm = min_pwm_ - 50;
-                    }
-                    else
-                    {
-                        set_speed_cm = max_speed_;
-                    }
+                    set_speed_cm = max_speed_;
                 }
 
                 // pid control speed
@@ -656,17 +623,16 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                     now_speed_ = min_speed_pwm;
                 }
 
-
                 // 保护局部规划出错
-                if (judge_angle > 130.0)
-                {
-                    cmd_vel.linear.x = 2100;
-                }
-                else
-                {
-                    cmd_vel.linear.x = now_speed_;
-                }
-                
+                // if (judge_angle > 130.0)
+                // {
+                //     cmd_vel.linear.x = 2100;
+                // }
+                // else
+                // {
+                // }
+
+                cmd_vel.linear.x = now_speed_;
                 cmd_vel.angular.z = baseAngle + steer_angle;
 
                 ROS_INFO("***************************");
@@ -677,7 +643,9 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 ROS_WARN("pid_speed_out:%.2f", pid_speed_out);
                 ROS_ERROR("Gas = %.2f Turn = %.2f", cmd_vel.linear.x, cmd_vel.angular.z);
                 ROS_INFO("***************************");
-                ROS_INFO("\n\n\n");
+                std::cout << std::endl;
+                std::cout << std::endl;
+                std::cout << std::endl;
             }
         }
     }

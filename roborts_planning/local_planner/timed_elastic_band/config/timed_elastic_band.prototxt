@@ -11,7 +11,7 @@ trajectory_opt {
     allow_init_with_backwards_motion: False 
     global_plan_viapoint_sep: 4.0
     via_points_ordered: True
-    max_global_plan_lookahead_dist: 5.5
+    max_global_plan_lookahead_dist: 4.5
     exact_arc_length: True
     force_reinit_new_goal_dist: 0.65
     feasibility_check_no_poses: 5

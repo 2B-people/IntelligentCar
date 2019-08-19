@@ -53,7 +53,7 @@ ErrorInfo GlobalPlannerNode::Init() {
 
 
   selected_algorithm_ = global_planner_config.selected_algorithm();
-  cycle_duration_ = std::chrono::microseconds((int) (1e7 / global_planner_config.frequency()));
+  cycle_duration_ = std::chrono::microseconds((int) (1e6 / global_planner_config.frequency()));
   max_retries_ = global_planner_config.max_retries();
   goal_distance_tolerance_ = global_planner_config.goal_distance_tolerance();
   goal_angle_tolerance_ = global_planner_config.goal_angle_tolerance();

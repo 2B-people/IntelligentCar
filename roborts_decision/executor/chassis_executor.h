@@ -48,8 +48,6 @@ class ChassisExecutor{
    * @param twist_accel Given velocity with acceleration
    */
   void Execute(const roborts_msgs::TwistAccel &twist_accel);
-
-  void Execute();
   /**
    * @brief Update the current chassis executor state
    * @return Current chassis executor state(same with behavior state)

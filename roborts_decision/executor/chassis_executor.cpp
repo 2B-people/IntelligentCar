@@ -48,11 +48,6 @@ void ChassisExecutor::Execute(const roborts_msgs::TwistAccel &twist_accel)
   cmd_vel_acc_pub_.publish(twist_accel);
 }
 
-void ChassisExecutor::Execute()
-{
-  local_planner_client_.sendGoal(local_planner_goal_);
-}
-
 BehaviorState ChassisExecutor::Update()
 {
   actionlib::SimpleClientGoalState state = actionlib::SimpleClientGoalState::LOST;
