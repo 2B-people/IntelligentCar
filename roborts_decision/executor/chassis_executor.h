@@ -57,6 +57,11 @@ class ChassisExecutor{
    * @brief Cancel the current task and deal with the mode transition
    */
   void Cancel();
+  /**
+   * @brief Cancel the current task and deal 
+   * @param flag:choose global or local
+   */
+  void Cancel(char flag);
 
  private:
   /***
