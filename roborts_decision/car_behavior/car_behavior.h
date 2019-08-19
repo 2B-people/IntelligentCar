@@ -60,7 +60,7 @@ public:
           loop_ = 0;
         }
 
-        if (loop_ == 20)
+        if (loop_ % 20 == 0)
         {
           chassis_executor_->Cancel(2);
         }
@@ -76,7 +76,7 @@ public:
         chassis_executor_->Execute(chase_goal_);
         loop_ = 0;
       }
-      if (loop_ == 20)
+      if (loop_ % 20 == 0)
       {
         chassis_executor_->Cancel(2);
       }
