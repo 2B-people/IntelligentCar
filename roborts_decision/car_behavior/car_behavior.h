@@ -63,6 +63,7 @@ public:
         if (loop_ % 20 == 0)
         {
           chassis_executor_->Cancel(2);
+          chassis_executor_->Execute();
         }
       }
     }
@@ -79,6 +80,7 @@ public:
       if (loop_ % 20 == 0)
       {
         chassis_executor_->Cancel(2);
+        chassis_executor_->Execute();
       }
     }
   }
