@@ -46,7 +46,7 @@
     <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
-    <param name="max_pwm_" value="5285"/>
+    <param name="max_pwm_" value="5280"/>
     <param name="min_pwm_" value="4950"/>
     <!-- speed of car m/s -->
     <param name="MaxSpeed" value="280.0"/>
@@ -57,7 +57,7 @@
 
     <!-- Pid -->
     <!-- speed -->
-    <param name="kp" value="0.43"/>
+    <param name="kp" value="0.48"/>
     <param name="ki" value="0.04"/>
     <param name="kd" value="0.0"/>
 
