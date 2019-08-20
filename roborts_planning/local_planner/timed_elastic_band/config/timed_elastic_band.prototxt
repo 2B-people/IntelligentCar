@@ -21,14 +21,14 @@ trajectory_opt {
 }
 
 kinematics_opt {
-    max_vel_x: 5.0
+    max_vel_x: 3.0
     max_vel_x_backwards: 0.0
     max_vel_y: 0.0
-    max_vel_theta: 4.0
+    max_vel_theta: 3.0
     acc_lim_x: 1.5
     acc_lim_y: 0.0
-    acc_lim_theta: 1.6
-    min_turning_radius: 1.78
+    acc_lim_theta: 1.5
+    min_turning_radius: 1.82
     wheelbase: 0.48
     cmd_angle_instead_rotvel: True
 }
@@ -84,7 +84,7 @@ optimize_info {
     weight_acc_lim_theta: 1
     weight_kinematics_nh: 1000
     weight_kinematics_forward_drive: 1
-    weight_kinematics_turning_radius: 3.0
+    weight_kinematics_turning_radius: 3.5
     weight_optimaltime: 1
     weight_obstacle: 55
     weight_inflation: 0.1

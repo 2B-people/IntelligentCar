@@ -576,42 +576,65 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 {
                     judge_angle = -judge_angle;
                 }
-                if (judge_angle > 5.0 && judge_angle < 15.0)
+
+                if (u_flag_)
                 {
-                    set_speed_cm = set_speed_1_;
-                    max_speed_pwm = max_pwm_ - 10;
-                }
-                else if (judge_angle > 15.0 && judge_angle < 25.0)
-                {
-                    set_speed_cm = set_speed_2_;
-                    max_speed_pwm = max_pwm_ - 20;
-                }
-                else if (judge_angle > 25.0 && judge_angle < 35.0)
-                {
-                    set_speed_cm = set_speed_3_;
-                    max_speed_pwm = max_pwm_ - 30;
-                }
-                else if (judge_angle > 35.0)
-                {
-                    set_speed_cm = set_speed_4_;
-                    max_speed_pwm = 5220;
-                    min_speed_pwm = min_pwm_ - 50;
+                    max_speed_pwm = 5230;
+                    if (judge_angle > 5.0 && judge_angle < 10.0)
+                    {
+                        set_speed_cm = 200;
+                        // max_speed_pwm = max_pwm_ - 10;
+                    }
+                    else if (judge_angle > 10.0 && judge_angle < 20.0)
+                    {
+                        set_speed_cm = 190;
+                        // max_speed_pwm = max_pwm_ - 20;
+                    }
+                    else if (judge_angle > 20.0 && judge_angle < 25.0)
+                    {
+                        set_speed_cm = 180;
+                        // max_speed_pwm = max_pwm_ - 30;
+                    }
+                    else if (judge_angle > 25.0)
+                    {
+                        set_speed_cm = 170;
+                        // max_speed_pwm = 5220;
+                        min_speed_pwm = min_pwm_ - 100;
+                    }
                 }
                 else
                 {
-                    set_speed_cm = max_speed_;
+                    if (judge_angle > 5.0 && judge_angle < 15.0)
+                    {
+                        set_speed_cm = set_speed_1_;
+                        max_speed_pwm = max_pwm_ - 10;
+                    }
+                    else if (judge_angle > 15.0 && judge_angle < 25.0)
+                    {
+                        set_speed_cm = set_speed_2_;
+                        max_speed_pwm = max_pwm_ - 15;
+                    }
+                    else if (judge_angle > 25.0 && judge_angle < 30.0)
+                    {
+                        set_speed_cm = set_speed_3_;
+                        max_speed_pwm = max_pwm_ - 20;
+                    }
+                    else if (judge_angle > 30.0)
+                    {
+                        set_speed_cm = set_speed_4_;
+                        max_speed_pwm = max_pwm_ - 30;
+                        min_speed_pwm = min_pwm_ - 60;
+                    }
+                    else
+                    {
+                        set_speed_cm = max_speed_;
+                    }
                 }
 
                 // pid control speed
                 double pid_speed_out = pid_speed_.calcPid(set_speed_cm, carVel.linear.x * 100);
-                if (u_flag_)
-                {
-                    now_speed_ = now_speed_ + (int)pid_speed_out * 2.0;
-                }
-                else
-                {
-                    now_speed_ = now_speed_ + (int)pid_speed_out;
-                }
+ 
+                now_speed_ = now_speed_ + (int)pid_speed_out;
 
                 // limit speed pwm
                 if (now_speed_ >= max_speed_pwm)
