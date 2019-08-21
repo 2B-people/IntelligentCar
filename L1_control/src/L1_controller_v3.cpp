@@ -55,6 +55,7 @@ public:
 
     void ReStart();
     void GoCar();
+    void BackCar();
     void SetValue(const char key);
 
     geometry_msgs::Point get_odom_car2WayPtVec(const geometry_msgs::Pose &carPose);
@@ -107,6 +108,7 @@ private:
     void pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg);
     void goalReachingCB(const ros::TimerEvent &);
     void controlLoopCB(const ros::TimerEvent &);
+    double getPathTwoPointDist(const geometry_msgs::Point &point_1, const geometry_msgs::Point &point_2);
 
 }; // end of class
 
@@ -190,8 +192,9 @@ L1Controller::L1Controller() : pid_speed_(POSITON_PID, 0.0, 0.0, 0.0, 1000, 0, 0
     timer2 = n_.createTimer(ros::Duration((0.8) / controller_freq), &L1Controller::goalReachingCB, this); // Duration(0.05) -> 20Hz
 
     //Visualization Marker Settings
-
     initMarker();
+
+    pub_.publish(cmd_vel);
 }
 
 void L1Controller::SetValue(const char key)
@@ -222,6 +225,7 @@ void L1Controller::ReStart()
     now_speed_ = 5000;
     cmd_vel.linear.x = 5000; // 1500 for stop
     cmd_vel.angular.z = baseAngle;
+    pub_.publish(cmd_vel);
 
     //not use
     // start_speed_ = 5100;
@@ -239,6 +243,26 @@ void L1Controller::ReStart()
 void L1Controller::GoCar()
 {
     go_ = true;
+}
+
+void L1Controller::BackCar()
+{
+    go_ = false;
+    static bool first_flag = true;
+    if (first_flag)
+    {
+        cmd_vel.linear.x = 5000; // 5000 for stop
+        static int loop = 0;
+        loop++;
+        if(loop == 10)
+        {
+            first_flag = false;
+        }
+    }
+
+    cmd_vel.linear.x = 4400; // 1500 for stop
+    cmd_vel.angular.z = baseAngle;
+    pub_.publish(cmd_vel);
 }
 
 void L1Controller::initMarker()
@@ -342,6 +366,14 @@ void L1Controller::pointCB(const geometry_msgs::PointStamped::ConstPtr &pointMsg
     ROS_WARN("IN OUT WHILE");
 }
 
+double L1Controller::getPathTwoPointDist(const geometry_msgs::Point &point_1, const geometry_msgs::Point &point_2)
+{
+    double dx = point_1.x - point_2.x;
+    double dy = point_1.y - point_2.y;
+    double dist = sqrt(dx * dx + dy * dy);
+    return dist;
+}
+
 double L1Controller::getYawFromPose(const geometry_msgs::Pose &carPose)
 {
     float x = carPose.orientation.x;
@@ -391,6 +423,9 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
     geometry_msgs::Point forwardPt;
     geometry_msgs::Point odom_car2WayPtVec;
     foundForwardPt = false;
+    bool getFirstForwardWayPointFlag = false;
+    geometry_msgs::Point odom_path_wayPt_last;
+    double distIntegral = 0;
 
     if (!goal_reached)
     {
@@ -407,6 +442,26 @@ geometry_msgs::Point L1Controller::get_odom_car2WayPtVec(const geometry_msgs::Po
 
                 if (_isForwardWayPt)
                 {
+                    // if (getFirstForwardWayPointFlag == false)
+                    // {
+                    //     distIntegral += getPathTwoPointDist(odom_path_wayPt, carPose_pos);
+                    //     odom_path_wayPt_last = odom_path_wayPt;
+                    //     getFirstForwardWayPointFlag = true;
+                    // }
+                    // else
+                    // {
+                    //     distIntegral += getPathTwoPointDist(odom_path_wayPt, odom_path_wayPt_last);
+                    //     odom_path_wayPt_last = odom_path_wayPt;
+                    //     //  ROS_INFO("distIntegral %.2f\n",distIntegral);
+                    // }
+
+                    // if (distIntegral >= Lfw)
+                    // {
+                    //     forwardPt = odom_path_wayPt;
+                    //     foundForwardPt = true;
+                    //     break;
+                    // }
+
                     bool _isWayPtAwayFromLfwDist = isWayPtAwayFromLfwDist(odom_path_wayPt, carPose_pos);
                     if (_isWayPtAwayFromLfwDist)
                     {
@@ -485,10 +540,10 @@ double L1Controller::getCar2UDist()
 double L1Controller::getL1Distance(const double &_Vcmd)
 {
     double L1 = 0;
-    if (_Vcmd < 1.34)
-        L1 = 3 / 3.4;
-    else if (_Vcmd > 1.34 && _Vcmd < 5.36)
-        L1 = _Vcmd * distance_kp_ / 3.0;
+    if (_Vcmd < 1.0)
+        L1 = 3 / 3.7;
+    else if (_Vcmd > 1.0 && _Vcmd < 5.36)
+        L1 = _Vcmd * distance_kp_ ;
     else
         L1 = 12 / 3.0;
     return L1;
@@ -579,7 +634,8 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
                 if (u_flag_)
                 {
-                    max_speed_pwm = 5230;
+                    max_speed_pwm = 5220;
+                    set_speed_cm = 200;
                     if (judge_angle > 5.0 && judge_angle < 10.0)
                     {
                         set_speed_cm = 200;
@@ -633,7 +689,7 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
 
                 // pid control speed
                 double pid_speed_out = pid_speed_.calcPid(set_speed_cm, carVel.linear.x * 100);
- 
+
                 now_speed_ = now_speed_ + (int)pid_speed_out;
 
                 // limit speed pwm
@@ -671,8 +727,8 @@ void L1Controller::controlLoopCB(const ros::TimerEvent &)
                 std::cout << std::endl;
             }
         }
+        pub_.publish(cmd_vel);
     }
-    pub_.publish(cmd_vel);
 }
 
 void Command();
@@ -703,7 +759,7 @@ int main(int argc, char **argv)
             command = '0';
             break;
         case '3':
-            // controller.SetValue(SetValueCmd());
+            controller.BackCar();
             // command = '0';
             break;
         case 27:
@@ -725,30 +781,14 @@ void Command()
 {
     while (command != 27)
     {
-        if (command == '0')
-        {
-            std::cout << "**************************************" << std::endl;
-            std::cout << "*********please send a command********" << std::endl;
-            std::cout << "> " << std::endl;
-            std::cout << "1: GO" << std::endl;
-            std::cout << "2: ReStart" << std::endl;
-            std::cout << "3: Set [Param]" << std::endl;
-            std::cout << "esc: exit program" << std::endl;
-            std::cout << "**************************************" << std::endl;
-            std::cin >> command;
-        }
+        std::cout << "**************************************" << std::endl;
+        std::cout << "*********please send a command********" << std::endl;
+        std::cout << "> " << std::endl;
+        std::cout << "1: GO" << std::endl;
+        std::cout << "2: ReStart" << std::endl;
+        std::cout << "3: Car Back" << std::endl;
+        std::cout << "esc: exit program" << std::endl;
+        std::cout << "**************************************" << std::endl;
+        std::cin >> command;
     }
-}
-
-char SetValueCmd()
-{
-    char value = 27;
-    std::cout << "************IN Set [Param]***********" << std::endl;
-    std::cout << "> " << std::endl;
-    std::cout << "1:distance + 0.05" << std::endl;
-    std::cout << "2:distance - 0.05" << std::endl;
-    std::cout << "**************************************" << std::endl;
-
-    std::cin >> value;
-    return value;
 }

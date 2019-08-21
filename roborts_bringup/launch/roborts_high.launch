@@ -40,24 +40,24 @@
   <node pkg="hypha_racecar" type="L1_controller_v3" name="L1_controller_v3" respawn="false" output="screen">
     <!-- L1 -->
     <param name="Vcmd" value="2.0" />
-    <param name="distance_kp_" value="1.8" />
+    <param name="distance_kp_" value="0.6" />
     <param name="AngleGain" value="-5.0"/>
     <param name="speed_ctrl_" value="1.2"/> 
     <param name="controller_freq" value="30"/>
 
     <!-- ESC -->
-    <param name="max_pwm_" value="5285"/>
+    <param name="max_pwm_" value="5260"/>
     <param name="min_pwm_" value="4950"/>
     <!-- speed of car m/s -->
-    <param name="MaxSpeed" value="270.0"/>
-    <param name="set_speed_1_" value="260.0"/>
-    <param name="set_speed_2_" value="250.0"/>
-    <param name="set_speed_3_" value="240.0"/>
-    <param name="set_speed_4_" value="200.0"/>
+    <param name="MaxSpeed" value="260.0"/>
+    <param name="set_speed_1_" value="240.0"/>
+    <param name="set_speed_2_" value="230.0"/>
+    <param name="set_speed_3_" value="220.0"/>
+    <param name="set_speed_4_" value="190.0"/>
 
     <!-- Pid -->
     <!-- speed -->
-    <param name="kp" value="0.40"/>
+    <param name="kp" value="0.46"/>
     <param name="ki" value="0.06"/>
     <param name="kd" value="0.0"/>
 
